@@ -229,6 +229,14 @@
     .tier-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; }
     .tier-meta-row { font-size: 10px; color: var(--slate-500); line-height: 1.3; }
     .tier-meta-row strong { font-weight: 600; color: var(--slate-600); }
+    .tier-count { margin-top: 7px; display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--slate-100); }
+    .tier-card.tier-selected .tier-count { border-top-color: var(--sky-200); }
+    .tier-count-label { font-size: 10px; color: var(--slate-500); font-weight: 600; flex: 1; }
+    .tier-count-input { width: 72px; padding: 3px 7px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 700; color: var(--slate-800); background: white; -moz-appearance: textfield; text-align: right; }
+    .tier-count-input::-webkit-inner-spin-button, .tier-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .tier-count-input:focus { outline: none; border-color: var(--sky-500); }
+    .tier-card.tier-selected .tier-count-input { border-color: var(--sky-300); background: white; }
+    .tier-count-computed { font-size: 10px; font-weight: 700; color: var(--emerald-600); white-space: nowrap; }
 
     @media (max-width: 900px) {
       .builder { grid-template-columns: 1fr; }
@@ -445,6 +453,7 @@ const SOFTWARE_TIERS = [
 ];
 
 let selectedTierId = 'free';
+let tierCounts = { team: 5, enterprise: 1000 };
 
 function getSelectedTier() {
   return SOFTWARE_TIERS.find(t => t.id === selectedTierId) || SOFTWARE_TIERS[0];
@@ -453,6 +462,21 @@ function getSelectedTier() {
 function selectTier(tierId) {
   selectedTierId = tierId;
   renderTierCards();
+  renderLicenseSummary();
+  renderTotals();
+}
+
+function updateTierCount(tierId, input) {
+  let val = parseInt(input.value);
+  if (tierId === 'team') {
+    if (isNaN(val) || val < 2) val = 2;
+    if (val > 20) val = 20;
+    tierCounts.team = val;
+  } else if (tierId === 'enterprise') {
+    if (isNaN(val) || val < 1000) val = 1000;
+    tierCounts.enterprise = val;
+  }
+  input.value = tierCounts[tierId];
   renderLicenseSummary();
   renderTotals();
 }
@@ -466,6 +490,32 @@ function renderTierCards() {
     const card = document.createElement('div');
     card.className = 'tier-card' + (isSelected ? ' tier-selected' : '');
     card.onclick = () => selectTier(tier.id);
+
+    let countInput = '';
+    if (tier.id === 'team') {
+      const computed = fmt(tierCounts.team * 150);
+      countInput = `
+      <div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">Educator seats</span>
+        <input class="tier-count-input" type="number" min="2" max="20" value="${tierCounts.team}"
+               onclick="event.stopPropagation(); selectTier('team')"
+               oninput="updateTierCount('team', this)"
+               onchange="updateTierCount('team', this)">
+        <span class="tier-count-computed">${computed}/yr</span>
+      </div>`;
+    } else if (tier.id === 'enterprise') {
+      const computed = fmt(tierCounts.enterprise * 3);
+      countInput = `
+      <div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">Student licenses</span>
+        <input class="tier-count-input" type="number" min="1000" step="100" value="${tierCounts.enterprise}"
+               onclick="event.stopPropagation(); selectTier('enterprise')"
+               oninput="updateTierCount('enterprise', this)"
+               onchange="updateTierCount('enterprise', this)">
+        <span class="tier-count-computed">${computed}/yr</span>
+      </div>`;
+    }
+
     card.innerHTML = `
       <div class="tier-card-top">
         <div class="tier-name">${tier.name}</div>
@@ -476,7 +526,7 @@ function renderTierCards() {
       <div class="tier-meta">
         <div class="tier-meta-row"><strong>Educators:</strong> ${tier.educators}</div>
         <div class="tier-meta-row"><strong>Students:</strong> ${tier.students}</div>
-      </div>`;
+      </div>${countInput}`;
     grid.appendChild(card);
   }
 }
@@ -485,7 +535,12 @@ function renderLicenseSummary() {
   const wrap = document.getElementById('licenseSummaryWrap');
   if (!wrap) return;
   const tier = getSelectedTier();
-  const priceStr = tier.annualCost !== null ? (tier.annualCost === 0 ? 'Included (Free)' : fmt(tier.annualCost) + '/yr') : 'Pricing varies';
+  const cost = calcTierCost();
+  let priceStr;
+  if (tier.id === 'free') priceStr = 'Included (Free)';
+  else if (tier.id === 'team') priceStr = `${fmt(cost)}/yr · ${tierCounts.team} seats`;
+  else if (tier.id === 'enterprise') priceStr = `${fmt(cost)}/yr · ${tierCounts.enterprise.toLocaleString()} students`;
+  else priceStr = fmt(cost) + '/yr';
   wrap.innerHTML = `
     <div>
       <div class="q-label">Software License</div>
@@ -577,7 +632,10 @@ function bundleTotal(bundle) {
 
 function calcTierCost() {
   const tier = getSelectedTier();
-  return tier.annualCost !== null ? tier.annualCost : 0;
+  if (tier.annualCost !== null) return tier.annualCost;
+  if (tier.id === 'team') return tierCounts.team * 150;
+  if (tier.id === 'enterprise') return tierCounts.enterprise * 3;
+  return 0;
 }
 
 function calcStandardTotal() {
@@ -883,6 +941,7 @@ function clearAll() {
   activeBundleId = 1;
   nextBundleId = 2;
   selectedTierId = 'free';
+  tierCounts = { team: 5, enterprise: 1000 };
   document.getElementById('discountVal').value = '';
   blockIds.forEach(refreshBlockCard);
   renderTierCards();
@@ -938,13 +997,11 @@ function copyForProposal() {
   lines.push('');
   lines.push('SOFTWARE LICENSE');
   lines.push('─'.repeat(W));
-  lines.push(padLine(
-    `  • Playlab ${tier.name} — ${tier.priceLabel}`,
-    tier.annualCost !== null ? fmt(tier.annualCost) : 'Varies'
-  ));
-  if (tier.annualCost === null) {
-    lines.push(`    (pricing based on user/student count — contact Playlab for quote)`);
-  }
+  const tierCost = calcTierCost();
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'team') tierDetail = `${tier.priceLabel} × ${tierCounts.team} seats`;
+  else if (tier.id === 'enterprise') tierDetail = `${tier.priceLabel} × ${tierCounts.enterprise.toLocaleString()} students`;
+  lines.push(padLine(`  • Playlab ${tier.name} — ${tierDetail}`, fmt(tierCost)));
   lines.push('');
   if (allItems().length > 0) {
     lines.push('SERVICES');
