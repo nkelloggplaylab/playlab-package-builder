@@ -674,94 +674,53 @@ const TEMPLATES = [
   {
     id: 'discovery',
     name: 'Discovery / Pilot',
-    desc: 'Single campus or small team getting started. PLC series + basic support. Typical range: $10K–$15K.',
+    desc: 'Single campus or small team getting started. Sets Play tier. Add services from the blocks below.',
     tier: 'play',
     bundles: [
-      { name: 'Discovery', items: [
-        { blockId: 'facilitation', qty: 6 },
-        { blockId: 'coaching', qty: 2 },
-        { blockId: 'admin-meetings', qty: 2 },
-        { blockId: 'office-hours', qty: 2 }
-      ]}
+      { name: 'Discovery', items: [] }
     ]
   },
   {
     id: 'single-campus',
     name: 'Single-Campus Implementation',
-    desc: 'One school going deep — PD for all staff, coaching, site visits. Typical range: $25K–$35K.',
+    desc: 'One school going deep. Sets Enterprise tier at 5,000 students. Add services from the blocks below.',
     tier: 'enterprise',
     tierCount: 5000,
     bundles: [
-      { name: 'Phase 1 — Launch', items: [
-        { blockId: 'facilitation', qty: 8 },
-        { blockId: 'ai-crash-course', qty: 1 },
-        { blockId: 'admin-meetings', qty: 3 }
-      ]},
-      { name: 'Phase 2 — Sustain', items: [
-        { blockId: 'coaching', qty: 8 },
-        { blockId: 'site-visit-full', qty: 3 },
-        { blockId: 'office-hours', qty: 4 },
-        { blockId: 'admin-meetings', qty: 4 }
-      ]}
+      { name: 'Phase 1 — Launch', items: [] },
+      { name: 'Phase 2 — Sustain', items: [] }
     ]
   },
   {
     id: 'multi-campus',
     name: 'Multi-Campus / Network',
-    desc: 'Deploy across 5+ campuses with central team PD, custom tool builds, and site visits. Typical range: $30K–$40K.',
+    desc: 'Deploy across 5+ campuses. Sets Enterprise tier at 15,000 students with phased bundles. Add services from the blocks below.',
     tier: 'enterprise',
     tierCount: 15000,
     bundles: [
-      { name: 'Kickoff & Strategy', items: [
-        { blockId: 'ideation-lp-le', qty: 1 },
-        { blockId: 'facilitation', qty: 4 },
-        { blockId: 'admin-meetings', qty: 2 }
-      ]},
-      { name: 'Build & Deploy', items: [
-        { blockId: 'tool-build-initial', qty: 1 },
-        { blockId: 'tool-build-addl', qty: 1 },
-        { blockId: 'tool-pilot', qty: 1 }
-      ]},
-      { name: 'Ongoing Support', items: [
-        { blockId: 'coaching', qty: 6 },
-        { blockId: 'site-visit-full', qty: 4 },
-        { blockId: 'office-hours', qty: 4 },
-        { blockId: 'admin-meetings', qty: 4 }
-      ]}
+      { name: 'Kickoff & Strategy', items: [] },
+      { name: 'Build & Deploy', items: [] },
+      { name: 'Ongoing Support', items: [] }
     ]
   },
   {
     id: 'cohort',
     name: 'Multi-District Cohort',
-    desc: 'Intermediary-led engagement across multiple orgs. Shared PLC + per-org coaching + custom tools. Typical range: $5K–$10K per org.',
+    desc: 'Intermediary-led engagement across multiple orgs. Sets Play tier with grouped bundles. Add services from the blocks below.',
     tier: 'play',
     bundles: [
-      { name: 'Shared PLC', items: [
-        { blockId: 'facilitation', qty: 8 },
-        { blockId: 'travel-flight', qty: 2 }
-      ]},
-      { name: 'Per-Org Support', items: [
-        { blockId: 'coaching', qty: 10 },
-        { blockId: 'admin-meetings', qty: 4 },
-        { blockId: 'office-hours', qty: 4 }
-      ]},
-      { name: 'Custom Tools', items: [
-        { blockId: 'tool-build-initial', qty: 1 },
-        { blockId: 'tool-build-addl', qty: 2 }
-      ]}
+      { name: 'Shared PLC', items: [] },
+      { name: 'Per-Org Support', items: [] },
+      { name: 'Custom Tools', items: [] }
     ]
   },
   {
     id: 'quick-start',
     name: 'Quick Start',
-    desc: 'Lightweight entry point — AI Crash Course + coaching follow-up. Typical range: $5K–$8K.',
+    desc: 'Lightweight entry point. Sets Play tier. Add services from the blocks below.',
     tier: 'play',
     bundles: [
-      { name: 'Quick Start', items: [
-        { blockId: 'ai-crash-course', qty: 1 },
-        { blockId: 'coaching', qty: 4 },
-        { blockId: 'office-hours', qty: 2 }
-      ]}
+      { name: 'Quick Start', items: [] }
     ]
   }
 ];
