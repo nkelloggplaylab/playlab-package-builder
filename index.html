@@ -476,8 +476,51 @@ const CURRENCIES = {
   DKK: { symbol: '\u00A0kr', prefix: false, rate: 6.85 }
 };
 let selectedCurrency = 'USD';
+let ratesLastUpdated = null;
 function getCurrency() { return CURRENCIES[selectedCurrency] || CURRENCIES.USD; }
 function convertAmount(usdAmount) { return Math.round(usdAmount * getCurrency().rate); }
+
+// Fetch live rates from ECB via Frankfurter API (updates daily on business days)
+function fetchLiveRates() {
+  const cacheKey = 'playlab_fx_rates';
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      const data = JSON.parse(cached);
+      const cacheAge = Date.now() - data.fetchedAt;
+      if (cacheAge < 24 * 60 * 60 * 1000) {
+        applyLiveRates(data.rates, data.date);
+        return;
+      }
+    } catch (e) { /* ignore bad cache */ }
+  }
+  fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,CHF,SEK,NOK,DKK')
+    .then(r => r.json())
+    .then(data => {
+      if (data.rates) {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ rates: data.rates, date: data.date, fetchedAt: Date.now() }));
+        applyLiveRates(data.rates, data.date);
+      }
+    })
+    .catch(() => { /* keep fallback rates */ });
+}
+
+function applyLiveRates(rates, date) {
+  if (rates.EUR) CURRENCIES.EUR.rate = rates.EUR;
+  if (rates.GBP) CURRENCIES.GBP.rate = rates.GBP;
+  if (rates.CHF) CURRENCIES.CHF.rate = rates.CHF;
+  if (rates.SEK) CURRENCIES.SEK.rate = rates.SEK;
+  if (rates.NOK) CURRENCIES.NOK.rate = rates.NOK;
+  if (rates.DKK) CURRENCIES.DKK.rate = rates.DKK;
+  ratesLastUpdated = date;
+  // Re-render if a non-USD currency is active
+  if (selectedCurrency !== 'USD') {
+    renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+  }
+  // Update tooltip on currency select
+  const sel = document.getElementById('currencySelect');
+  if (sel) sel.title = 'ECB rates as of ' + date;
+}
 
 // ─── Rates ───────────────────────────────────────────────────────────────────
 const DEFAULT_RATES = { lp: 250, dev: 200, travel: 125 };
@@ -1161,7 +1204,10 @@ function copyForProposal() {
   lines.push('Playlab — Package Quote');
   lines.push(`Partner: ${partner}`);
   lines.push(`Date: ${today}`);
-  if (selectedCurrency !== 'USD') lines.push(`Currency: ${selectedCurrency} (converted from USD at ${getCurrency().rate}×)`);
+  if (selectedCurrency !== 'USD') {
+    const rateNote = ratesLastUpdated ? `ECB rate as of ${ratesLastUpdated}` : 'approximate rate';
+    lines.push(`Currency: ${selectedCurrency} (${getCurrency().rate}× USD — ${rateNote})`);
+  }
   lines.push('');
   lines.push('SOFTWARE LICENSE');
   lines.push('─'.repeat(W));
@@ -1379,7 +1425,10 @@ function copyAsMarkdown() {
   lines.push(`# Playlab — Package Quote`);
   lines.push(`**Partner:** ${partner}  `);
   lines.push(`**Date:** ${today}`);
-  if (selectedCurrency !== 'USD') lines.push(`**Currency:** ${selectedCurrency} (converted from USD at ${getCurrency().rate}×)`);
+  if (selectedCurrency !== 'USD') {
+    const rateNote = ratesLastUpdated ? `ECB rate as of ${ratesLastUpdated}` : 'approximate rate';
+    lines.push(`**Currency:** ${selectedCurrency} (${getCurrency().rate}× USD — ${rateNote})`);
+  }
   lines.push('');
 
   // Software
@@ -1685,6 +1734,7 @@ renderTierCards();
 renderLicenseSummary();
 renderBlocks();
 render();
+fetchLiveRates();
 </script>
 </body>
 </html>
