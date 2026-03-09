@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Playlab — Package Builder</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -252,6 +253,10 @@
     .btn-copy-md { padding: 11px 14px; background: var(--slate-700); color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
     .btn-copy-md:hover { background: var(--slate-800); }
     .btn-copy-md.copied { background: var(--emerald-500); }
+    .btn-export { width: 100%; padding: 11px; background: #4285f4; color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-export:hover { background: #3367d6; }
+    .btn-export:disabled { opacity: 0.6; cursor: wait; }
+    .btn-export svg { width: 16px; height: 16px; flex-shrink: 0; }
 
     /* ── Software License Section ── */
     .software-section { margin-bottom: 24px; }
@@ -444,6 +449,10 @@
     </div>
 
     <div class="actions">
+      <button class="btn-export" id="exportDocBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Export to Google Doc
+      </button>
       <div class="copy-row">
         <button class="btn-copy" id="copyBtn">Copy for Proposal</button>
         <button class="btn-copy-md" id="copyMdBtn" title="Copy as Markdown">MD</button>
@@ -617,17 +626,17 @@ const SOFTWARE_TIERS = [
     students: '1,000 students'
   },
   {
-    id: 'adopt',
-    name: 'Adopt & Scale',
+    id: 'impact',
+    name: 'Impact',
     tagline: 'For non-school organizations',
     priceLabel: '$200/user/year',
     annualCost: null,
-    educators: '—',
+    educators: '\u2014',
     students: '150 students/user'
   },
   {
-    id: 'enterprise',
-    name: 'Adopt & Scale (Schools)',
+    id: 'impact-schools',
+    name: 'Impact (Schools)',
     tagline: 'For schools and universities',
     priceLabel: '$3/year per student',
     annualCost: null,
@@ -637,7 +646,7 @@ const SOFTWARE_TIERS = [
 ];
 
 let selectedTierId = 'free';
-let tierCounts = { adopt: 5, enterprise: 1000 };
+let tierCounts = { impact: 5, impactSchools: 1000 };
 
 function getSelectedTier() {
   return SOFTWARE_TIERS.find(t => t.id === selectedTierId) || SOFTWARE_TIERS[0];
@@ -653,19 +662,19 @@ function selectTier(tierId) {
 
 function updateTierCount(tierId, input, clamp) {
   let val = parseInt(input.value);
-  if (tierId === 'adopt') {
+  if (tierId === 'impact') {
     if (clamp && (isNaN(val) || val < 1)) val = 1;
-    if (!isNaN(val) && val >= 1) tierCounts.adopt = val;
-  } else if (tierId === 'enterprise') {
+    if (!isNaN(val) && val >= 1) tierCounts.impact = val;
+  } else if (tierId === 'impact-schools') {
     if (clamp && (isNaN(val) || val < 1000)) val = 1000;
-    if (!isNaN(val) && val >= 1) tierCounts.enterprise = val;
+    if (!isNaN(val) && val >= 1) tierCounts.impactSchools = val;
   }
   if (clamp) input.value = tierCounts[tierId];
   // Update computed price inline without rebuilding DOM
   const computedEl = input.closest('.tier-count')?.querySelector('.tier-count-computed');
   if (computedEl) {
-    if (tierId === 'adopt') computedEl.textContent = fmt(tierCounts.adopt * 200) + '/yr';
-    else if (tierId === 'enterprise') computedEl.textContent = fmt(tierCounts.enterprise * 3) + '/yr';
+    if (tierId === 'impact') computedEl.textContent = fmt(tierCounts.impact * 200) + '/yr';
+    else if (tierId === 'impact-schools') computedEl.textContent = fmt(tierCounts.impactSchools * 3) + '/yr';
   }
   renderLicenseSummary();
   renderTotals();
@@ -682,26 +691,26 @@ function renderTierCards() {
     card.onclick = () => selectTier(tier.id);
 
     let countInput = '';
-    if (tier.id === 'adopt') {
-      const computed = fmt(tierCounts.adopt * 200);
+    if (tier.id === 'impact') {
+      const computed = fmt(tierCounts.impact * 200);
       countInput = `
       <div class="tier-count" onclick="event.stopPropagation()">
         <span class="tier-count-label">User seats</span>
-        <input class="tier-count-input" type="number" min="1" value="${tierCounts.adopt}"
-               onclick="event.stopPropagation(); if(selectedTierId!=='adopt') selectTier('adopt')"
-               oninput="updateTierCount('adopt', this, false)"
-               onchange="updateTierCount('adopt', this, true)">
+        <input class="tier-count-input" type="number" min="1" value="${tierCounts.impact}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact') selectTier('impact')"
+               oninput="updateTierCount('impact', this, false)"
+               onchange="updateTierCount('impact', this, true)">
         <span class="tier-count-computed">${computed}/yr</span>
       </div>`;
-    } else if (tier.id === 'enterprise') {
-      const computed = fmt(tierCounts.enterprise * 3);
+    } else if (tier.id === 'impact-schools') {
+      const computed = fmt(tierCounts.impactSchools * 3);
       countInput = `
       <div class="tier-count" onclick="event.stopPropagation()">
         <span class="tier-count-label">Student licenses</span>
-        <input class="tier-count-input" type="number" min="1000" step="100" value="${tierCounts.enterprise}"
-               onclick="event.stopPropagation(); if(selectedTierId!=='enterprise') selectTier('enterprise')"
-               oninput="updateTierCount('enterprise', this, false)"
-               onchange="updateTierCount('enterprise', this, true)">
+        <input class="tier-count-input" type="number" min="1000" step="100" value="${tierCounts.impactSchools}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact-schools') selectTier('impact-schools')"
+               oninput="updateTierCount('impact-schools', this, false)"
+               onchange="updateTierCount('impact-schools', this, true)">
         <span class="tier-count-computed">${computed}/yr</span>
       </div>`;
     }
@@ -728,8 +737,8 @@ function renderLicenseSummary() {
   const cost = calcTierCost();
   let priceStr;
   if (tier.id === 'free') priceStr = 'Included (Free)';
-  else if (tier.id === 'adopt') priceStr = `${fmt(cost)}/yr · ${tierCounts.adopt} users`;
-  else if (tier.id === 'enterprise') priceStr = `${fmt(cost)}/yr · ${tierCounts.enterprise.toLocaleString()} students`;
+  else if (tier.id === 'impact') priceStr = `${fmt(cost)}/yr · ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') priceStr = `${fmt(cost)}/yr · ${tierCounts.impactSchools.toLocaleString()} students`;
   else priceStr = fmt(cost) + '/yr';
   wrap.innerHTML = `
     <div>
@@ -842,8 +851,8 @@ function bundleTotal(bundle) {
 function calcTierCost() {
   const tier = getSelectedTier();
   if (tier.annualCost !== null) return tier.annualCost;
-  if (tier.id === 'adopt') return tierCounts.adopt * 200;
-  if (tier.id === 'enterprise') return tierCounts.enterprise * 3;
+  if (tier.id === 'impact') return tierCounts.impact * 200;
+  if (tier.id === 'impact-schools') return tierCounts.impactSchools * 3;
   return 0;
 }
 
@@ -1191,7 +1200,7 @@ function clearAll() {
   activeBundleId = 1;
   nextBundleId = 2;
   selectedTierId = 'free';
-  tierCounts = { adopt: 5, enterprise: 1000 };
+  tierCounts = { impact: 5, impactSchools: 1000 };
   document.getElementById('discountVal').value = '';
   blockIds.forEach(refreshBlockCard);
   renderTierCards();
@@ -1238,8 +1247,8 @@ function copyForProposal() {
   lines.push('─'.repeat(W));
   const tierCost = calcTierCost();
   let tierDetail = tier.priceLabel;
-  if (tier.id === 'adopt') tierDetail = `${tier.priceLabel} × ${tierCounts.adopt} users`;
-  else if (tier.id === 'enterprise') tierDetail = `${tier.priceLabel} × ${tierCounts.enterprise.toLocaleString()} students`;
+  if (tier.id === 'impact') tierDetail = `${tier.priceLabel} × ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') tierDetail = `${tier.priceLabel} × ${tierCounts.impactSchools.toLocaleString()} students`;
   lines.push(padLine(`  • Playlab ${tier.name} — ${tierDetail}`, fmt(tierCost)));
   lines.push('');
   if (allItems().length > 0) {
@@ -1359,7 +1368,7 @@ function loadFromUrl() {
   try {
     const state = JSON.parse(atob(hash));
     selectedTierId = state.t || 'free';
-    if (state.tc) { tierCounts.adopt = state.tc.adopt || 5; tierCounts.enterprise = state.tc.enterprise || 1000; }
+    if (state.tc) { tierCounts.impact = state.tc.impact || state.tc.adopt || 5; tierCounts.impactSchools = state.tc.impactSchools || state.tc.enterprise || 1000; }
     if (state.cur && CURRENCIES[state.cur]) {
       selectedCurrency = state.cur;
       document.getElementById('currencySelect').value = selectedCurrency;
@@ -1459,8 +1468,8 @@ function copyAsMarkdown() {
   // Software
   lines.push('## Software License');
   let tierDetail = tier.priceLabel;
-  if (tier.id === 'adopt') tierDetail = `${tier.priceLabel} × ${tierCounts.adopt} users`;
-  else if (tier.id === 'enterprise') tierDetail = `${tier.priceLabel} × ${tierCounts.enterprise.toLocaleString()} students`;
+  if (tier.id === 'impact') tierDetail = `${tier.priceLabel} × ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') tierDetail = `${tier.priceLabel} × ${tierCounts.impactSchools.toLocaleString()} students`;
   lines.push(`- **Playlab ${tier.name}** — ${tierDetail} — **${fmt(tierCost)}**`);
   lines.push('');
 
@@ -1528,6 +1537,261 @@ function copyAsMarkdown() {
   });
 }
 
+// ─── Google Doc Export ─────────────────────────────────────────────────────────
+const GOOGLE_CLIENT_ID = '250408974404-nvnm9m62vc2g8gsn0u0k1t8gt0h0caa2';
+const TEMPLATE_DOC_ID = '1CR1wVXGYLWjZYshsdtvfNwgXx7kivzql34GhIFbYfjU';
+const PROPOSALS_FOLDER_ID = '1JhBbiJuizy41xAJs2e-8JuqLiKBWVWgx';
+let gToken = null;
+
+async function gApiFetch(url, opts = {}) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer ' + gToken, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Google API error');
+  return data;
+}
+
+function requestGoogleToken() {
+  return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.accounts) {
+      reject(new Error('Google sign-in not loaded. Please refresh and try again.'));
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp) => {
+        if (resp.error) return reject(resp);
+        gToken = resp.access_token;
+        resolve();
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function exportToGoogleDoc() {
+  if (!allItems().length && calcTierCost() === 0) {
+    showToast('Add services first');
+    return;
+  }
+
+  const btn = document.getElementById('exportDocBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>Signing in...</span>';
+
+  try {
+    if (!gToken) await requestGoogleToken();
+
+    btn.innerHTML = '<span>Creating proposal...</span>';
+
+    const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
+
+    // 1. Create new doc in Proposals folder
+    const createRes = await gApiFetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: partner + ' \u2014 Playlab Partnership Proposal',
+        mimeType: 'application/vnd.google-apps.document',
+        parents: [PROPOSALS_FOLDER_ID]
+      })
+    });
+    const docId = createRes.id;
+
+    btn.innerHTML = '<span>Populating content...</span>';
+
+    // 4. Build content
+    const { text, formats } = buildProposalDoc();
+
+    // 5. Insert text
+    await gApiFetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+      method: 'POST',
+      body: JSON.stringify({ requests: [{ insertText: { location: { index: 1 }, text: text } }] })
+    });
+
+    // 6. Apply formatting + set font to Lexend
+    const fontReq = {
+      updateTextStyle: {
+        range: { startIndex: 1, endIndex: 1 + text.length },
+        textStyle: { weightedFontFamily: { fontFamily: 'Lexend' }, fontSize: { magnitude: 10, unit: 'PT' } },
+        fields: 'weightedFontFamily,fontSize'
+      }
+    };
+    const allFormats = [fontReq, ...formats];
+    await gApiFetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+      method: 'POST',
+      body: JSON.stringify({ requests: allFormats })
+    });
+
+    // 7. Open doc
+    window.open('https://docs.google.com/document/d/' + docId + '/edit', '_blank');
+    showToast('Proposal created!');
+  } catch (err) {
+    console.error('Export failed:', err);
+    if (err.error === 'popup_closed_by_user') showToast('Sign-in cancelled');
+    else { showToast('Export failed \u2014 see console'); gToken = null; }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Export to Google Doc';
+  }
+}
+
+function buildProposalDoc() {
+  const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
+  const std = calcStandardTotal();
+  const disc = calcDiscount(std);
+  const partnerTotal = std - disc;
+  const tier = getSelectedTier();
+  const tierCost = calcTierCost();
+
+  let text = '';
+  const headings = [];
+  const bolds = [];
+
+  function h1(str) { const s = text.length; text += str + '\n'; headings.push({ start: s, end: text.length - 1, style: 'HEADING_1' }); }
+  function h2(str) { const s = text.length; text += str + '\n'; headings.push({ start: s, end: text.length - 1, style: 'HEADING_2' }); }
+  function p(str) { text += str + '\n'; }
+  function bold(label, value) { const s = text.length; text += label; bolds.push({ start: s, end: text.length }); text += value + '\n'; }
+  function blank() { text += '\n'; }
+
+  // Title
+  h1(partner + ' + Playlab 2025\u2013\u201926');
+  p('Build AI capacity and custom tools to solve problems in your unique context.');
+  blank();
+
+  // Overview
+  h1('Overview');
+  p('Playlab is a tech non-profit dedicated to helping educators and school communities harness AI to address real needs. We build AI literacy and empower users to design and deploy their own AI solutions\u2014supported by hands-on professional development, coaching, and our school-safe AI software. We take an open-source approach to technology development\u2014with the goal of democratizing AI access and helping build a lasting ecosystem for education. Today, more than 80,000 educators are using Playlab to drive impact in their context.');
+  blank();
+  p('[Add partner context here]');
+  blank();
+
+  // Goals
+  h1('Partnership Goals and Outcomes');
+  p('[Goals and outcomes to be defined collaboratively]');
+  blank();
+
+  // Services & Pricing
+  h1('Services & Pricing');
+  blank();
+
+  // Software License
+  h2('Software License');
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'impact') tierDetail = tier.priceLabel + ' \u00D7 ' + tierCounts.impact + ' users';
+  else if (tier.id === 'impact-schools') tierDetail = tier.priceLabel + ' \u00D7 ' + tierCounts.impactSchools.toLocaleString() + ' students';
+  bold('Playlab ' + tier.name + ': ', tierDetail + ' \u2014 ' + fmtUsd(tierCost) + '/year');
+  p('Full access to Playlab\u2019s AI platform for participating educators and leaders. Private organization workspace for building, sharing, and managing apps across schools. Access to curriculum-aligned and custom knowledge libraries. Integrations with tools like Clever and Canvas for rostering and access. Multi-model support (ChatGPT, Claude, Gemini, LLaMA) with built-in safeguards. Advanced sharing options for embedding apps and managing permissions.');
+  blank();
+
+  // Learning Services
+  if (allItems().length > 0) {
+    h2('Learning Services');
+    const multiBundle = bundles.filter(b => b.items.length).length > 1;
+
+    for (const bundle of bundles) {
+      if (!bundle.items.length) continue;
+
+      if (multiBundle) {
+        const bLabel = bundle.name || 'Bundle ' + bundle.bundleId;
+        bold(bLabel + ': ', fmtUsd(bundleTotal(bundle)));
+      }
+
+      for (const cat of CATEGORIES) {
+        const catItems = bundle.items.filter(i => i.catId === cat.id);
+        if (!catItems.length) continue;
+
+        const cs = text.length;
+        text += cat.label;
+        bolds.push({ start: cs, end: text.length });
+        text += '\n';
+
+        for (const item of catItems) {
+          const found = getBlock(item.blockId);
+          if (!found) continue;
+          const { block } = found;
+          const gross = getBlockPrice(item.blockId) * item.qty;
+          const net = itemSubtotal(item);
+          const qtyStr = fmtQtyVerbose(item.qty, block.unit);
+          let priceStr;
+          if (item.discount > 0) {
+            const discDesc = item.discountType === 'pct' ? item.discount + '% off' : fmtUsd(item.discount) + ' off';
+            priceStr = fmtUsd(net) + ' (' + discDesc + ' standard ' + fmtUsd(gross) + ')';
+          } else {
+            priceStr = fmtUsd(gross);
+          }
+          p('  \u2022  ' + block.name + qtyStr + ' \u2014 ' + priceStr);
+          p('      ' + (block.partnerDesc || block.desc));
+        }
+      }
+      blank();
+    }
+  }
+
+  // Investment Summary
+  h2('Investment Summary');
+  bold('Standard Total: ', fmtUsd(std));
+  if (disc > 0) {
+    const discVal = document.getElementById('discountVal').value;
+    const discType = document.getElementById('discountType').value;
+    const discLabel = discType === 'pct' ? 'Discount (' + discVal + '%)' : 'Discount (' + fmtUsd(parseFloat(discVal)) + ')';
+    bold(discLabel + ': ', '\u2212' + fmtUsd(disc));
+  }
+  bold('Partner Price: ', fmtUsd(partnerTotal));
+  blank();
+
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+  if (students > 0) p('Per-student cost: ' + fmtUsd(Math.round(partnerTotal / students)) + '/student/year (' + students.toLocaleString() + ' students)');
+  if (educators > 0) p('Per-educator cost: ' + fmtUsd(Math.round(partnerTotal / educators)) + '/educator/year (' + educators.toLocaleString() + ' educators)');
+  if (students > 0 || educators > 0) blank();
+
+  p('* AI model usage costs are covered by Playlab and are not passed on to partners. License fees are based on estimated usage levels provided at the time of purchase; actual usage may vary. Playlab will work with the Organization to support AI tool deployment that stays within reasonable usage limits.');
+  blank();
+
+  // Next Steps
+  h1('Next Steps & Terms');
+  p('\u2022  Confirm Proposal and Statement of Work');
+  p('\u2022  Sign & Execute Contract \u2014 requires acknowledgement that your organization has read, understood, and agrees to adhere to Playlab Policies and Playlab\u2019s Data Privacy Addendum.');
+  p('\u2022  Payment due 30 days after signing.');
+  p('\u2022  Provide Playlab with the following information:');
+  p('      \u2022  Playlab should send invoices to: [Name and email]');
+  p('      \u2022  Playlab contract signing to: [Name and email]');
+  p('      \u2022  CTO: [Name and email]');
+  blank();
+
+  bold('Playlab Contact', '');
+  p('33170 Alvarado Niles Road #3048, Union City, CA, 94587');
+  p('Denise Sulit \u2014 denise@playlab.ai; 732-589-1380');
+
+  // Build format requests (doc body starts at index 1)
+  const formats = [];
+  for (const h of headings) {
+    formats.push({
+      updateParagraphStyle: {
+        range: { startIndex: h.start + 1, endIndex: h.end + 1 },
+        paragraphStyle: { namedStyleType: h.style },
+        fields: 'namedStyleType'
+      }
+    });
+  }
+  for (const b of bolds) {
+    if (b.end > b.start) {
+      formats.push({
+        updateTextStyle: {
+          range: { startIndex: b.start + 1, endIndex: b.end + 1 },
+          textStyle: { bold: true },
+          fields: 'bold'
+        }
+      });
+    }
+  }
+
+  return { text, formats };
+}
+
 // ─── Auto-save on changes ─────────────────────────────────────────────────────
 const _origRender = render;
 render = function() { _origRender(); renderInsights(); saveToUrl(); };
@@ -1545,19 +1809,17 @@ function switchTab(tab) {
 
 // ─── Software Options (for examples) ──────────────────────────────────────────
 const SW_OPTIONS = [
-  { id: 'none',             label: 'None',                blockId: null,              defaultQty: 0,     unit: '',        pilotDiscount: 0 },
-  { id: 'sw-play',          label: 'Play License (6-mo)', blockId: 'sw-play',         defaultQty: 1,     unit: 'flat',    pilotDiscount: 0.5 },
-  { id: 'sw-team',          label: 'Team License',        blockId: 'sw-team',         defaultQty: 20,    unit: 'user',    pilotDiscount: 0.5 },
-  { id: 'sw-enterprise-t1', label: 'Enterprise — Tier 1', blockId: 'sw-enterprise-t1',defaultQty: 5000,  unit: 'student', pilotDiscount: 0 },
-  { id: 'sw-enterprise-t2', label: 'Enterprise — Tier 2', blockId: 'sw-enterprise-t2',defaultQty: 15000, unit: 'student', pilotDiscount: 0 },
-  { id: 'sw-enterprise-t3', label: 'Enterprise — Tier 3', blockId: 'sw-enterprise-t3',defaultQty: 30000, unit: 'student', pilotDiscount: 0 },
+  { id: 'none',             label: 'None',                     blockId: null,              defaultQty: 0,     unit: '',        pilotDiscount: 0 },
+  { id: 'sw-play',          label: 'Play (6-mo trial)',        blockId: 'sw-play',         defaultQty: 1,     unit: 'flat',    pilotDiscount: 0.5 },
+  { id: 'sw-impact',        label: 'Impact (per user)',        blockId: 'sw-impact',       defaultQty: 20,    unit: 'user',    pilotDiscount: 0.5 },
+  { id: 'sw-impact-schools',label: 'Impact Schools (per student)', blockId: 'sw-impact-schools',defaultQty: 5000,  unit: 'student', pilotDiscount: 0 },
 ];
 
 function getSwOption(id) { return SW_OPTIONS.find(o => o.id === id) || SW_OPTIONS[0]; }
 
 function calcSwPrice(swId, qty) {
   if (!swId || swId === 'none') return 0;
-  const prices = { 'sw-play': 1500, 'sw-team': 200, 'sw-enterprise-t1': 4.00, 'sw-enterprise-t2': 3.50, 'sw-enterprise-t3': 3.00 };
+  const prices = { 'sw-play': 1500, 'sw-impact': 200, 'sw-impact-schools': 3 };
   return (prices[swId] || 0) * qty;
 }
 
@@ -1565,22 +1827,22 @@ function calcSwPrice(swId, qty) {
 const EXAMPLES = [
   { id: 'scenario-a', title: 'Scenario A: AI Literacy PLC Series', subtitle: 'Most common entry-point — ~40% of partnerships', color: '#0EA5E9', badgeText: 'Most Common', badgeBg: '#e0f2fe', badgeColor: '#0369a1',
     items: [{ blockId: 'facilitation', qty: 6 }, { blockId: 'coaching', qty: 1.5 }],
-    sw: { optionId: 'sw-team', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
   { id: 'scenario-b', title: 'Scenario B: PLC + Custom App Creation', subtitle: 'Highest-value service offering — ~25% of partnerships', color: '#8b5cf6', badgeText: 'Highest Value', badgeBg: '#ede9fe', badgeColor: '#6d28d9',
     items: [{ blockId: 'facilitation', qty: 18 }, { blockId: 'coaching', qty: 4.5 }, { blockId: 'ideation-lp-le', qty: 1 }, { blockId: 'tool-build-initial', qty: 1 }, { blockId: 'tool-build-addl', qty: 1 }, { blockId: 'site-visit-full', qty: 1 }],
-    sw: { optionId: 'sw-team', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
   { id: 'scenario-c', title: 'Scenario C: AI Design Fellows Program', subtitle: 'Deep cohort-based engagement — ~10%', color: '#10b981', badgeText: 'Deep Engagement', badgeBg: '#ecfdf5', badgeColor: '#047857',
     items: [{ blockId: 'facilitation', qty: 12 }, { blockId: 'ideation-lp', qty: 1 }, { blockId: 'admin-meetings', qty: 3 }, { blockId: 'coaching', qty: 3 }],
-    sw: { optionId: 'sw-team', qty: 15 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+    sw: { optionId: 'sw-impact', qty: 15 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
   { id: 'scenario-d', title: 'Scenario D: Student AI Literacy & Hackathon', subtitle: 'Student-facing with educator prep — ~15%', color: '#f97316', badgeText: 'Student-Facing', badgeBg: '#fff7ed', badgeColor: '#c2410c',
     items: [{ blockId: 'facilitation', qty: 3.5 }, { blockId: 'coaching', qty: 1 }],
-    sw: { optionId: 'sw-team', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
   { id: 'scenario-e', title: 'Scenario E: Entry Workshop / Single Session', subtitle: 'First engagement — generates champions — ~20%', color: '#f43f5e', badgeText: 'Entry Point', badgeBg: '#fff1f2', badgeColor: '#be123c',
     items: [{ blockId: 'ai-crash-course', qty: 1 }],
     sw: { optionId: 'sw-play', qty: 1 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: null },
   { id: 'scenario-f', title: 'Scenario F: Enterprise Software License', subtitle: 'Platform-only — ~5% standalone; Year 2 upgrade path', color: '#64748b', badgeText: 'Software Only', badgeBg: '#f1f5f9', badgeColor: '#334155',
     items: [],
-    sw: { optionId: 'sw-enterprise-t1', qty: 5000 }, discountLabel: null, renewalLabel: null }
+    sw: { optionId: 'sw-impact-schools', qty: 5000 }, discountLabel: null, renewalLabel: null }
 ];
 
 let examplesState = JSON.parse(JSON.stringify(EXAMPLES));
@@ -1693,8 +1955,8 @@ function changeExampleSw(exIdx, optionId) {
 }
 function changeExampleSwQty(exIdx, dir) {
   const sw = examplesState[exIdx].sw;
-  const steps = { 'sw-team': 1, 'sw-enterprise-t1': 500, 'sw-enterprise-t2': 1000, 'sw-enterprise-t3': 1000 };
-  const mins = { 'sw-team': 2, 'sw-enterprise-t1': 1000, 'sw-enterprise-t2': 10000, 'sw-enterprise-t3': 25000 };
+  const steps = { 'sw-impact': 1, 'sw-impact-schools': 500 };
+  const mins = { 'sw-impact': 2, 'sw-impact-schools': 1000 };
   const step = steps[sw.optionId] || 1;
   const nq = sw.qty + dir * step;
   if (nq < (mins[sw.optionId] || 1)) return;
@@ -1702,7 +1964,7 @@ function changeExampleSwQty(exIdx, dir) {
 }
 function setExampleSwQty(exIdx, el) {
   const sw = examplesState[exIdx].sw;
-  const mins = { 'sw-team': 2, 'sw-enterprise-t1': 1000, 'sw-enterprise-t2': 10000, 'sw-enterprise-t3': 25000 };
+  const mins = { 'sw-impact': 2, 'sw-impact-schools': 1000 };
   let v = parseInt(el.value);
   if (isNaN(v) || v < (mins[sw.optionId] || 1)) v = mins[sw.optionId] || 1;
   sw.qty = v; renderExamples();
@@ -1717,16 +1979,17 @@ function loadExampleIntoBuilder(exIdx) {
     bundles[0].items.push({ itemId: nextItemId++, blockId: item.blockId, catId: f.cat.id, qty: item.qty, discount: 0, discountType: 'pct' });
   }
   // Map example software to builder tier
-  const swMap = { 'sw-play': 'play', 'sw-team': 'team', 'sw-enterprise-t1': 'enterprise', 'sw-enterprise-t2': 'enterprise', 'sw-enterprise-t3': 'enterprise', 'none': 'free' };
+  const swMap = { 'sw-play': 'play', 'sw-impact': 'impact', 'sw-impact-schools': 'impact-schools', 'none': 'free' };
   selectedTierId = swMap[ex.sw.optionId] || 'free';
-  if (selectedTierId === 'team') tierCounts.team = ex.sw.qty;
-  if (selectedTierId === 'enterprise') tierCounts.enterprise = ex.sw.qty;
+  if (selectedTierId === 'impact') tierCounts.impact = ex.sw.qty;
+  if (selectedTierId === 'impact-schools') tierCounts.impactSchools = ex.sw.qty;
   switchTab('builder');
   renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
   showToast('Loaded: ' + ex.title);
 }
 
 // ─── Events ────────────────────────────────────────────────────────────────────
+document.getElementById('exportDocBtn').addEventListener('click', exportToGoogleDoc);
 document.getElementById('copyBtn').addEventListener('click', copyForProposal);
 document.getElementById('copyMdBtn').addEventListener('click', copyAsMarkdown);
 document.getElementById('clearBtn').addEventListener('click', () => { clearAll(); history.replaceState(null, '', location.pathname); });
