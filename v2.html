@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Playlab — Package Builder v3</title>
+  <title>Playlab — Package Builder v2</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -25,7 +25,7 @@
 
     body { font-family: 'Lexend', sans-serif; background: var(--slate-50); color: var(--slate-800); line-height: 1.5; min-height: 100vh; }
 
-    /* Auth Gate */
+    /* ── Auth Gate ── */
     .auth-gate { position: fixed; inset: 0; z-index: 9999; background: var(--slate-50); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
     .auth-gate.hidden { display: none; }
     .auth-logo { display: flex; gap: 2px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
@@ -38,7 +38,7 @@
     .auth-error.show { display: block; }
     #g_id_signin { margin-top: 8px; }
 
-    /* Header */
+    /* ── Header ── */
     .app-header {
       background: white; border-bottom: 1px solid var(--slate-200);
       padding: 14px 28px; display: flex; align-items: center; gap: 14px;
@@ -57,14 +57,13 @@
     .currency-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
     .currency-select:focus { outline: none; border-color: var(--sky-500); }
 
-    /* Layout */
-    .builder { display: grid; grid-template-columns: 1fr 440px; min-height: calc(100vh - 53px); }
+    /* ── Layout ── */
+    .builder { display: grid; grid-template-columns: 1fr 420px; min-height: calc(100vh - 53px); }
 
-    /* Left: Package Catalog */
+    /* ── Left: Package Catalog ── */
     .catalog-col { padding: 20px 24px 48px; overflow-y: auto; border-right: 1px solid var(--slate-200); }
-    .catalog-col > .section-title { font-size: 16px; font-weight: 700; color: var(--slate-800); margin-bottom: 16px; }
 
-    /* Pathway Section */
+    /* ── Pathway Section ── */
     .pathway-section { margin-bottom: 28px; }
     .pathway-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--slate-200); cursor: pointer; user-select: none; }
     .pathway-header:hover { opacity: 0.85; }
@@ -75,9 +74,9 @@
     .pathway-desc { font-size: 10.5px; color: var(--slate-400); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: auto; }
     .pathway-body { transition: all 0.2s; }
     .pathway-section.collapsed .pathway-body { display: none; }
-    .pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+    .pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 
-    /* Package Card */
+    /* ── Package Card ── */
     .pkg-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 12px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.15s, box-shadow 0.15s; }
     .pkg-card:hover { border-color: var(--sky-300); box-shadow: 0 2px 8px rgba(14,165,233,.08); }
     .pkg-card.in-quote { border-color: var(--sky-400); background: var(--sky-50); }
@@ -95,28 +94,7 @@
     .pkg-card.in-quote .pkg-add-btn { background: var(--emerald-500); }
     .pkg-card.in-quote .pkg-add-btn:hover { background: var(--emerald-600); }
 
-    /* Inline Config Panel */
-    .pkg-config { margin-top: 8px; padding: 12px; background: var(--slate-50); border: 1.5px solid var(--sky-200); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
-    .pkg-config-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .pkg-config-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); min-width: 70px; }
-    .config-select { padding: 5px 8px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; flex: 1; }
-    .config-select:focus { outline: none; border-color: var(--sky-500); }
-
-    /* Delivery pills */
-    .delivery-pills { display: flex; gap: 4px; flex: 1; }
-    .delivery-pill { padding: 5px 12px; border: 1.5px solid var(--slate-200); border-radius: 20px; font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 600; color: var(--slate-600); background: white; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-    .delivery-pill:hover { border-color: var(--sky-300); }
-    .delivery-pill.active { background: var(--sky-500); color: white; border-color: var(--sky-500); }
-    .delivery-pill .pill-cost { font-size: 9px; font-weight: 500; opacity: 0.8; margin-left: 3px; }
-
-    .config-participants { width: 60px; padding: 5px 8px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: center; -moz-appearance: textfield; }
-    .config-participants::-webkit-inner-spin-button, .config-participants::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .config-participants:focus { outline: none; border-color: var(--sky-500); }
-
-    .config-confirm-btn { padding: 8px 0; width: 100%; background: var(--emerald-500); color: white; border: none; border-radius: 8px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
-    .config-confirm-btn:hover { background: var(--emerald-600); }
-
-    /* Add-on cards */
+    /* ── Add-on cards ── */
     .addon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
     .addon-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; transition: border-color 0.15s; cursor: pointer; }
     .addon-card:hover { border-color: var(--sky-300); }
@@ -125,23 +103,36 @@
     .addon-price { font-size: 10px; font-weight: 700; color: var(--sky-600); }
     .addon-add { font-size: 10px; font-weight: 600; color: var(--sky-500); margin-top: 2px; }
 
-    /* Software License Cards */
-    .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-    .sw-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 11px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.15s, box-shadow 0.15s; }
-    .sw-card:hover { border-color: var(--violet-500); box-shadow: 0 2px 8px rgba(139,92,246,.08); }
-    .sw-card-name { font-size: 13px; font-weight: 700; color: var(--slate-800); }
-    .sw-card-tagline { font-size: 10.5px; color: var(--slate-500); line-height: 1.35; }
-    .sw-card-price { font-size: 12px; font-weight: 700; color: var(--violet-600); background: var(--violet-50); padding: 3px 8px; border-radius: 20px; align-self: flex-start; }
-    .sw-card-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-    .sw-card-row label { font-size: 10px; font-weight: 600; color: var(--slate-500); }
-    .sw-count-input { width: 80px; padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 700; color: var(--slate-800); text-align: right; -moz-appearance: textfield; }
-    .sw-count-input::-webkit-inner-spin-button, .sw-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .sw-count-input:focus { outline: none; border-color: var(--violet-500); }
-    .sw-card-computed { font-size: 10px; font-weight: 700; color: var(--emerald-600); margin-left: auto; }
-    .sw-add-btn { margin-top: 6px; padding: 7px 0; width: 100%; background: var(--violet-500); color: white; border: none; border-radius: 8px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-    .sw-add-btn:hover { background: var(--violet-600); }
+    /* ── Software Tier Section ── */
+    .software-section { margin-bottom: 28px; }
+    .software-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--slate-200); }
+    .software-section-header h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-700); }
+    .software-section-sub { font-size: 10.5px; color: var(--slate-400); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: auto; }
+    .tier-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+    .tier-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 11px; padding: 12px 14px 11px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+    .tier-card:hover { border-color: var(--sky-300); box-shadow: 0 2px 8px rgba(14,165,233,.08); }
+    .tier-card.tier-selected { border-color: var(--sky-500); background: var(--sky-50); box-shadow: 0 0 0 3px rgba(14,165,233,.12); }
+    .tier-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .tier-name { font-size: 13px; font-weight: 700; color: var(--slate-800); }
+    .tier-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--slate-300); flex-shrink: 0; transition: all 0.15s; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+    .tier-card.tier-selected .tier-radio { border-color: var(--sky-500); background: var(--sky-500); }
+    .tier-card.tier-selected .tier-radio::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+    .tier-tagline { font-size: 10.5px; color: var(--slate-500); line-height: 1.35; }
+    .tier-price { font-size: 11px; font-weight: 700; color: var(--sky-700); background: var(--sky-100); padding: 2px 7px; border-radius: 20px; align-self: flex-start; margin-top: 2px; white-space: nowrap; }
+    .tier-card.tier-selected .tier-price { background: var(--sky-200); }
+    .tier-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; }
+    .tier-meta-row { font-size: 10px; color: var(--slate-500); line-height: 1.3; }
+    .tier-meta-row strong { font-weight: 600; color: var(--slate-600); }
+    .tier-count { margin-top: 7px; display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--slate-100); }
+    .tier-card.tier-selected .tier-count { border-top-color: var(--sky-200); }
+    .tier-count-label { font-size: 10px; color: var(--slate-500); font-weight: 600; flex: 1; }
+    .tier-count-input { width: 72px; padding: 3px 7px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 700; color: var(--slate-800); background: white; -moz-appearance: textfield; text-align: right; }
+    .tier-count-input::-webkit-inner-spin-button, .tier-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .tier-count-input:focus { outline: none; border-color: var(--sky-500); }
+    .tier-card.tier-selected .tier-count-input { border-color: var(--sky-300); }
+    .tier-count-computed { font-size: 10px; font-weight: 700; color: var(--emerald-600); white-space: nowrap; }
 
-    /* Right: Quote Panel */
+    /* ── Right: Quote Panel ── */
     .quote-col { background: white; position: sticky; top: 53px; height: calc(100vh - 53px); align-self: start; }
     .quote-col-inner { height: 100%; overflow-y: scroll; padding: 20px 20px 28px; box-sizing: border-box; }
     .quote-col-inner > * + * { margin-top: 14px; }
@@ -150,7 +141,20 @@
     .partner-input:focus { outline: none; border-color: var(--sky-500); }
     .partner-input::placeholder { color: var(--slate-400); font-weight: 400; }
 
-    /* Rate Editor */
+    /* ── License Editor (right panel) ── */
+    .license-editor { background: var(--slate-50); border: 1.5px solid var(--slate-200); border-radius: 9px; padding: 10px 12px; }
+    .license-tier-select { width: 100%; padding: 6px 10px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; color: var(--slate-800); background: white; cursor: pointer; margin-bottom: 6px; }
+    .license-tier-select:focus { outline: none; border-color: var(--sky-500); }
+    .license-detail { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .license-detail-text { font-size: 10.5px; color: var(--slate-500); flex: 1; min-width: 100px; }
+    .license-count-wrap { display: flex; align-items: center; gap: 5px; }
+    .license-count-wrap label { font-size: 10px; font-weight: 600; color: var(--slate-500); white-space: nowrap; }
+    .license-count-input { width: 72px; padding: 4px 7px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: right; background: white; -moz-appearance: textfield; }
+    .license-count-input::-webkit-inner-spin-button, .license-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .license-count-input:focus { outline: none; border-color: var(--sky-500); }
+    .license-price { font-size: 13px; font-weight: 800; color: var(--sky-700); white-space: nowrap; }
+
+    /* ── Rate Editor ── */
     .rate-editor { background: var(--slate-50); border: 1.5px solid var(--slate-200); border-radius: 9px; overflow: hidden; }
     .rate-editor-toggle { width: 100%; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; background: none; border: none; cursor: pointer; font-family: 'Lexend', sans-serif; }
     .rate-editor-toggle:hover { background: var(--slate-100); }
@@ -166,7 +170,7 @@
     .rate-reset { font-size: 9px; font-weight: 600; color: var(--sky-600); background: none; border: none; cursor: pointer; font-family: 'Lexend', sans-serif; padding: 2px 6px; border-radius: 4px; align-self: flex-end; margin-top: 2px; }
     .rate-reset:hover { background: var(--sky-50); }
 
-    /* Quote Package Section */
+    /* ── Quote Package Section ── */
     .quote-packages { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
     .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; border: 2px dashed var(--slate-200); border-radius: 10px; color: var(--slate-400); font-size: 12px; text-align: center; gap: 6px; }
     .empty-icon { font-size: 24px; opacity: 0.4; }
@@ -181,17 +185,11 @@
     .qpkg-total { font-size: 12px; font-weight: 800; color: var(--sky-700); flex-shrink: 0; }
     .qpkg-delete { width: 20px; height: 20px; border: none; background: none; color: var(--slate-300); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; border-radius: 4px; transition: all 0.1s; line-height: 1; }
     .qpkg-delete:hover { color: var(--rose-500); background: var(--rose-50); }
+
     .qpkg-body { display: none; padding: 10px 12px; flex-direction: column; gap: 5px; }
     .qpkg.expanded .qpkg-body { display: flex; }
 
-    .delivery-badge { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
-    .delivery-badge.virtual { background: var(--emerald-50); color: var(--emerald-600); }
-    .delivery-badge.local { background: var(--amber-50); color: #92400e; }
-    .delivery-badge.travel { background: var(--orange-50); color: var(--orange-600); }
-
-    .session-info { font-size: 10px; color: var(--slate-500); font-weight: 500; padding: 4px 8px; background: var(--slate-50); border-radius: 6px; margin-bottom: 2px; }
-
-    /* Participants row */
+    /* ── Participants row inside expanded pkg ── */
     .participants-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--amber-50); border: 1px solid var(--amber-400); border-radius: 7px; font-size: 10.5px; color: #78350f; margin-bottom: 4px; }
     .participants-row label { font-weight: 600; flex-shrink: 0; }
     .participants-input { width: 56px; padding: 3px 6px; border: 1px solid var(--amber-400); border-radius: 5px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: center; background: white; -moz-appearance: textfield; }
@@ -199,15 +197,13 @@
     .participants-input:focus { outline: none; border-color: var(--sky-500); }
     .facilitator-count { font-weight: 700; flex-shrink: 0; }
 
-    /* Component line */
+    /* ── Component line ── */
     .comp-line { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: var(--slate-50); border-radius: 7px; }
     .comp-line.support { background: var(--emerald-50); }
-    .comp-line.travel-line { background: var(--orange-50); }
     .comp-info { flex: 1; min-width: 0; }
     .comp-name { font-size: 11px; font-weight: 600; color: var(--slate-700); }
     .comp-name .support-tag { font-size: 8.5px; font-weight: 700; color: var(--emerald-600); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; }
     .comp-name .scale-tag { font-size: 8.5px; font-weight: 700; color: var(--orange-600); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; }
-    .comp-name .auto-tag { font-size: 8.5px; font-weight: 700; color: var(--violet-600); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; }
     .comp-qty { display: flex; align-items: center; gap: 3px; }
     .comp-qty-btn { width: 18px; height: 18px; border: 1.5px solid var(--slate-300); border-radius: 4px; background: white; color: var(--slate-600); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: all 0.1s; flex-shrink: 0; padding: 0; }
     .comp-qty-btn:hover { border-color: var(--sky-500); color: var(--sky-600); }
@@ -217,22 +213,15 @@
     .comp-unit { font-size: 9.5px; font-weight: 600; color: var(--slate-400); }
     .comp-total { font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: right; flex-shrink: 0; min-width: 50px; }
 
-    /* Pathway discount */
+    /* ── Pathway discount row in package ── */
     .pathway-discount-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: var(--emerald-50); border: 1px solid var(--emerald-500); border-radius: 7px; font-size: 11px; }
     .pathway-discount-label { font-weight: 600; color: var(--emerald-600); }
     .pathway-discount-value { font-weight: 800; color: var(--emerald-600); }
 
-    /* Addon line in quote */
+    /* ── Add-on line in quote ── */
     .addon-line { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: var(--slate-50); border-radius: 7px; }
 
-    /* Software license line in quote */
-    .license-line { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--violet-50); border: 1px solid var(--violet-500); border-radius: 8px; }
-    .license-line .comp-info { flex: 1; }
-    .license-line .license-name { font-size: 11px; font-weight: 700; color: var(--violet-600); }
-    .license-line .license-detail { font-size: 9.5px; color: var(--slate-500); }
-    .license-line .license-price { font-size: 12px; font-weight: 800; color: var(--violet-600); flex-shrink: 0; }
-
-    /* Totals */
+    /* ── Totals ── */
     .totals-section { border-top: 1.5px solid var(--slate-100); padding-top: 14px; display: flex; flex-direction: column; gap: 9px; }
     .t-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
     .t-label { color: var(--slate-500); font-weight: 500; }
@@ -253,7 +242,7 @@
     .savings-note { text-align: center; font-size: 10.5px; color: var(--emerald-600); font-weight: 600; display: none; }
     .savings-note.show { display: block; }
 
-    /* Insights */
+    /* ── Insights ── */
     .insights-section { border-top: 1.5px solid var(--slate-100); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
     .insight-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
     .insight-label { color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 4px; }
@@ -262,7 +251,7 @@
     .insight-input::-webkit-inner-spin-button, .insight-input::-webkit-outer-spin-button { -webkit-appearance: none; }
     .insight-input:focus { outline: none; border-color: var(--sky-500); }
 
-    /* Actions */
+    /* ── Actions ── */
     .actions { display: flex; flex-direction: column; gap: 7px; }
     .btn-export { width: 100%; padding: 11px; background: #4285f4; color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn-export:hover { background: #3367d6; }
@@ -279,7 +268,7 @@
     .btn-clear:hover { color: var(--rose-500); border-color: var(--rose-500); background: var(--rose-50); }
     .footnote { font-size: 10px; color: var(--slate-400); line-height: 1.5; padding-top: 8px; border-top: 1px solid var(--slate-100); }
 
-    /* Toast */
+    /* ── Toast ── */
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: white; padding: 9px 20px; border-radius: 40px; font-size: 13px; font-weight: 600; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1); z-index: 1000; white-space: nowrap; pointer-events: none; }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -289,7 +278,7 @@
       .quote-col-inner { height: auto; overflow-y: visible; }
     }
     @media (min-width: 769px) and (max-width: 1100px) {
-      .builder { grid-template-columns: 1fr 380px; }
+      .builder { grid-template-columns: 1fr 360px; }
     }
   </style>
 </head>
@@ -305,7 +294,7 @@
 <header class="app-header">
   <div class="logo"><span>P</span><span>l</span><span>a</span><span>y</span><span>l</span><span>a</span><span>b</span></div>
   <div class="header-sep"></div>
-  <div class="header-title">Package Builder v3</div>
+  <div class="header-title">Package Builder</div>
   <div class="header-spacer"></div>
   <div class="currency-toggle">
     <label>Currency</label>
@@ -324,20 +313,19 @@
 </header>
 
 <div class="builder">
-  <!-- LEFT: Package Options -->
+  <!-- ── LEFT: Package Catalog ── -->
   <div class="catalog-col">
-    <div class="section-title">Package Options</div>
     <div id="catalogContainer"></div>
 
-    <div class="pathway-section" id="softwareSection">
+    <div class="pathway-section collapsed" id="softwareSection">
       <div class="pathway-header" onclick="document.getElementById('softwareSection').classList.toggle('collapsed')">
         <span class="pathway-chevron">&#x25BC;</span>
         <div class="pathway-dot" style="background:#8b5cf6"></div>
-        <h2>Software Licenses</h2>
-        <span class="pathway-desc">Enterprise tiers &mdash; add multiple licenses</span>
+        <h2>Software License</h2>
+        <span class="software-section-sub">Select one tier — also editable in quote panel</span>
       </div>
       <div class="pathway-body">
-        <div class="sw-grid" id="swGrid"></div>
+        <div class="tier-grid" id="tierGrid"></div>
       </div>
     </div>
 
@@ -354,19 +342,30 @@
     </div>
   </div>
 
-  <!-- RIGHT: Package Builder -->
+  <!-- ── RIGHT: Quote Panel ── -->
   <div class="quote-col">
   <div class="quote-col-inner">
-    <div style="font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:4px">Package Builder</div>
-
     <div>
       <div class="q-label">Partner / Organization</div>
       <input class="partner-input" id="partnerName" type="text" placeholder="e.g. Nampa School District">
     </div>
 
-    <div id="licenseSummaryWrap">
-      <div class="q-label">Software Licenses</div>
-      <div id="licenseList"></div>
+    <div id="licenseSummaryWrap"></div>
+
+    <div>
+      <div class="q-label">Base Rates</div>
+      <div class="rate-editor" id="rateEditor">
+        <button class="rate-editor-toggle" onclick="document.getElementById('rateEditor').classList.toggle('open')">
+          <span class="rate-editor-label">Base Rates</span>
+          <span class="rate-editor-status" id="rateStatus">LP $250 · Dev $200 · Travel $125</span>
+        </button>
+        <div class="rate-editor-body">
+          <div class="rate-field"><label>LP $/hr</label><input class="rate-input" id="rateLp" type="number" min="1" value="250" onchange="updateRates()" oninput="updateRates()"></div>
+          <div class="rate-field"><label>Dev $/hr</label><input class="rate-input" id="rateDev" type="number" min="1" value="200" onchange="updateRates()" oninput="updateRates()"></div>
+          <div class="rate-field"><label>Travel $/hr</label><input class="rate-input" id="rateTravel" type="number" min="1" value="125" onchange="updateRates()" oninput="updateRates()"></div>
+          <button class="rate-reset" onclick="resetRates()">Reset to defaults</button>
+        </div>
+      </div>
     </div>
 
     <div>
@@ -379,34 +378,18 @@
       <div id="quoteAddonsList"></div>
     </div>
 
-    <div>
-      <div class="q-label">Base Rates</div>
-      <div class="rate-editor" id="rateEditor">
-        <button class="rate-editor-toggle" onclick="document.getElementById('rateEditor').classList.toggle('open')">
-          <span class="rate-editor-label">Base Rates</span>
-          <span class="rate-editor-status" id="rateStatus">LP $250 &middot; Dev $200 &middot; Travel $125</span>
-        </button>
-        <div class="rate-editor-body">
-          <div class="rate-field"><label>LP $/hr</label><input class="rate-input" id="rateLp" type="number" min="1" value="250" onchange="updateRates()" oninput="updateRates()"></div>
-          <div class="rate-field"><label>Dev $/hr</label><input class="rate-input" id="rateDev" type="number" min="1" value="200" onchange="updateRates()" oninput="updateRates()"></div>
-          <div class="rate-field"><label>Travel $/hr</label><input class="rate-input" id="rateTravel" type="number" min="1" value="125" onchange="updateRates()" oninput="updateRates()"></div>
-          <button class="rate-reset" onclick="resetRates()">Reset to defaults</button>
-        </div>
-      </div>
-    </div>
-
     <div class="totals-section">
       <div class="t-row">
         <span class="t-label">Services Total</span>
-        <span class="t-value" id="servicesTotal">&mdash;</span>
+        <span class="t-value" id="servicesTotal">—</span>
       </div>
       <div class="t-row">
-        <span class="t-label">Software Total</span>
-        <span class="t-value" id="softwareTotal">&mdash;</span>
+        <span class="t-label">Software</span>
+        <span class="t-value" id="softwareTotal">—</span>
       </div>
       <div class="t-row" style="border-top:1px solid var(--slate-100);padding-top:8px">
         <span class="t-label">Standard Total</span>
-        <span class="t-value" id="standardTotal">&mdash;</span>
+        <span class="t-value" id="standardTotal">—</span>
       </div>
       <div class="discount-row">
         <span class="disc-label">Discount</span>
@@ -422,7 +405,7 @@
       </div>
       <div class="total-final">
         <span class="t-label">Custom Partner Price</span>
-        <span class="t-value" id="partnerPrice">&mdash;</span>
+        <span class="t-value" id="partnerPrice">—</span>
       </div>
       <div class="savings-note" id="savingsNote"></div>
     </div>
@@ -432,13 +415,13 @@
         <span class="insight-label">Students served
           <input class="insight-input" id="studentCount" type="number" min="0" placeholder="0">
         </span>
-        <span class="insight-value" id="perStudentCost">&mdash;</span>
+        <span class="insight-value" id="perStudentCost">—</span>
       </div>
       <div class="insight-row">
         <span class="insight-label">Educators served
           <input class="insight-input" id="educatorCount" type="number" min="0" placeholder="0">
         </span>
-        <span class="insight-value" id="perEducatorCost">&mdash;</span>
+        <span class="insight-value" id="perEducatorCost">—</span>
       </div>
     </div>
 
@@ -617,58 +600,149 @@ function fmt(n) {
 }
 function fmtUsd(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 function unitShort(unit) {
   const map = { hr: 'hr', mo: 'mo', day: 'day', trip: 'trip', visit: 'visit', flat: '\u00D7' };
   return map[unit] || unit;
 }
 
-// ─── Software Tiers (Enterprise only) ───────────────────────────────────────
+// ─── Software Tiers ────────────────────────────────────────────────────────────
 const SOFTWARE_TIERS = [
-  { id: 'impact', name: 'Impact', tagline: 'For non-school organizations', pricePerUnit: 200, unitLabel: 'user', unitLabelPlural: 'users', minCount: 1, defaultCount: 5 },
-  { id: 'impact-schools', name: 'Impact (Schools)', tagline: 'For schools and universities', pricePerUnit: 3, unitLabel: 'student', unitLabelPlural: 'students', minCount: 1000, defaultCount: 1000 }
+  { id: 'free', name: 'Free', tagline: 'For individuals to play and explore', priceLabel: 'Free, always', annualCost: 0, educators: '1 educator', students: '\u2014' },
+  { id: 'pro', name: 'Pro', tagline: 'For individuals to implement widely', priceLabel: '$100/year or $10/month', annualCost: 100, educators: '1 educator', students: '150 students' },
+  { id: 'play', name: 'Play', tagline: '6 month trial for any organization', priceLabel: '$1,500/6-mo per org', annualCost: 1500, educators: '100 educators', students: '1,000 students' },
+  { id: 'impact', name: 'Impact', tagline: 'For non-school organizations', priceLabel: '$200/user/year', annualCost: null, educators: '\u2014', students: '150 students/user' },
+  { id: 'impact-schools', name: 'Impact (Schools)', tagline: 'For schools and universities', priceLabel: '$3/year per student', annualCost: null, educators: 'All educators', students: 'All students' }
 ];
 
-// Software licenses in quote (multiple allowed)
-let quoteLicenses = [];
-let nextLicenseId = 1;
+let selectedTierId = 'impact-schools';
+let tierCounts = { impact: 5, 'impact-schools': 1000 };
 
-function calcLicenseCost(lic) {
-  const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-  if (!tier) return 0;
-  return tier.pricePerUnit * lic.count;
+function getSelectedTier() { return SOFTWARE_TIERS.find(t => t.id === selectedTierId) || SOFTWARE_TIERS[0]; }
+
+function calcTierCost() {
+  const tier = getSelectedTier();
+  if (tier.annualCost !== null) return tier.annualCost;
+  if (tier.id === 'impact') return tierCounts.impact * 200;
+  if (tier.id === 'impact-schools') return tierCounts['impact-schools'] * 3;
+  return 0;
 }
 
-function calcTotalSoftware() {
-  return quoteLicenses.reduce((sum, lic) => sum + calcLicenseCost(lic), 0);
-}
-
-function addLicense(tierId, count) {
-  const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
-  if (!tier) return;
-  const c = count || tier.defaultCount;
-  quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count: c });
-  renderSwCards();
-  renderLicenseList();
+function selectTier(tierId) {
+  selectedTierId = tierId;
+  renderTierCards();
+  renderLicenseSummary();
   renderTotals();
-  showToast('Added: ' + tier.name + ' license');
+  saveToUrl();
 }
 
-function removeLicense(licenseId) {
-  quoteLicenses = quoteLicenses.filter(l => l.licenseId !== licenseId);
-  renderSwCards();
-  renderLicenseList();
-  renderTotals();
-}
-
-function updateLicenseCount(licenseId, input, clamp) {
-  const lic = quoteLicenses.find(l => l.licenseId === licenseId);
-  if (!lic) return;
-  const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
+function updateTierCount(tierId, input, clamp) {
   let val = parseInt(input.value);
-  if (clamp && (isNaN(val) || val < tier.minCount)) val = tier.minCount;
-  if (!isNaN(val) && val >= 1) lic.count = val;
-  if (clamp) input.value = lic.count;
-  renderLicenseList();
+  const key = tierId;
+  const min = tierId === 'impact-schools' ? 1000 : 1;
+  if (clamp && (isNaN(val) || val < min)) val = min;
+  if (!isNaN(val) && val >= 1) tierCounts[key] = val;
+  if (clamp) input.value = tierCounts[key];
+  const computedEl = input.closest('.tier-count')?.querySelector('.tier-count-computed');
+  if (computedEl) {
+    if (tierId === 'impact') computedEl.textContent = fmt(tierCounts.impact * 200) + '/yr';
+    else if (tierId === 'impact-schools') computedEl.textContent = fmt(tierCounts['impact-schools'] * 3) + '/yr';
+  }
+  renderLicenseSummary();
+  renderTotals();
+  saveToUrl();
+}
+
+function renderTierCards() {
+  const grid = document.getElementById('tierGrid');
+  grid.innerHTML = '';
+  for (const tier of SOFTWARE_TIERS) {
+    const isSelected = tier.id === selectedTierId;
+    const card = document.createElement('div');
+    card.className = 'tier-card' + (isSelected ? ' tier-selected' : '');
+    card.onclick = () => selectTier(tier.id);
+    let countHtml = '';
+    if (tier.id === 'impact') {
+      countHtml = `<div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">User seats</span>
+        <input class="tier-count-input" type="number" min="1" value="${tierCounts.impact}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact') selectTier('impact')"
+               oninput="updateTierCount('impact', this, false)" onchange="updateTierCount('impact', this, true)">
+        <span class="tier-count-computed">${fmt(tierCounts.impact * 200)}/yr</span>
+      </div>`;
+    } else if (tier.id === 'impact-schools') {
+      countHtml = `<div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">Student licenses</span>
+        <input class="tier-count-input" type="number" min="1000" step="100" value="${tierCounts['impact-schools']}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact-schools') selectTier('impact-schools')"
+               oninput="updateTierCount('impact-schools', this, false)" onchange="updateTierCount('impact-schools', this, true)">
+        <span class="tier-count-computed">${fmt(tierCounts['impact-schools'] * 3)}/yr</span>
+      </div>`;
+    }
+    card.innerHTML = `<div class="tier-card-top"><div class="tier-name">${tier.name}</div><div class="tier-radio"></div></div>
+      <div class="tier-tagline">${tier.tagline}</div>
+      <div class="tier-price">${tier.priceLabel}</div>
+      <div class="tier-meta"><div class="tier-meta-row"><strong>Educators:</strong> ${tier.educators}</div><div class="tier-meta-row"><strong>Students:</strong> ${tier.students}</div></div>${countHtml}`;
+    grid.appendChild(card);
+  }
+}
+
+function renderLicenseSummary() {
+  const wrap = document.getElementById('licenseSummaryWrap');
+  const tier = getSelectedTier();
+  const cost = calcTierCost();
+
+  const options = SOFTWARE_TIERS.map(t =>
+    `<option value="${t.id}" ${t.id === selectedTierId ? 'selected' : ''}>${t.name} \u2014 ${t.priceLabel}</option>`
+  ).join('');
+
+  let countHtml = '';
+  if (tier.id === 'impact') {
+    countHtml = `<div class="license-count-wrap">
+      <label>Users:</label>
+      <input class="license-count-input" type="number" min="1" value="${tierCounts.impact}"
+             oninput="updateLicenseCount('impact', this)" onchange="updateLicenseCount('impact', this, true)">
+    </div>`;
+  } else if (tier.id === 'impact-schools') {
+    countHtml = `<div class="license-count-wrap">
+      <label>Students:</label>
+      <input class="license-count-input" type="number" min="1000" step="100" value="${tierCounts['impact-schools']}"
+             oninput="updateLicenseCount('impact-schools', this)" onchange="updateLicenseCount('impact-schools', this, true)">
+    </div>`;
+  }
+
+  const detailText = tier.id === 'free' ? 'Free for individuals'
+    : tier.id === 'pro' ? '1 educator \u00B7 150 students'
+    : tier.id === 'play' ? '100 educators \u00B7 1,000 students'
+    : tier.id === 'impact' ? '150 students/user'
+    : 'All educators \u00B7 All students';
+
+  wrap.innerHTML = `<div><div class="q-label">Software License</div>
+    <div class="license-editor">
+      <select class="license-tier-select" onchange="selectTierFromQuote(this.value)">${options}</select>
+      <div class="license-detail">
+        <span class="license-detail-text">${detailText}</span>
+        ${countHtml}
+        <span class="license-price">${cost > 0 ? fmt(cost) + '/yr' : 'Free'}</span>
+      </div>
+    </div></div>`;
+}
+
+function selectTierFromQuote(tierId) {
+  selectedTierId = tierId;
+  renderTierCards();
+  renderLicenseSummary();
+  renderTotals();
+  saveToUrl();
+}
+
+function updateLicenseCount(tierId, input, clamp) {
+  let val = parseInt(input.value);
+  const min = tierId === 'impact-schools' ? 1000 : 1;
+  if (clamp && (isNaN(val) || val < min)) { val = min; input.value = val; }
+  if (!isNaN(val) && val >= 1) tierCounts[tierId] = val;
+  renderTierCards();
+  renderLicenseSummary();
   renderTotals();
   saveToUrl();
 }
@@ -681,10 +755,9 @@ const PATHWAYS = [
 ];
 
 const PACKAGES = [
-  // Educators: Core Packages
+  // ── Educators: Core Packages ──
   { id: 'edu-starter', pathway: 'educators', name: 'Starter Package', subtitle: '3 hrs + supports', badge: 'Recommended Start',
     desc: 'A foundational introduction where participants learn how AI works and build their first simple AI tool.',
-    facilitationHours: 3,
     components: [
       { blockId: 'facilitation', qty: 3, label: 'Facilitation', scalable: true },
       { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true },
@@ -694,7 +767,6 @@ const PACKAGES = [
     ] },
   { id: 'edu-core', pathway: 'educators', name: 'Core Package', subtitle: '6 hrs + supports', badge: 'Most Popular',
     desc: 'A deeper learning experience for teams ready to move beyond basics to intentional design with advanced features.',
-    facilitationHours: 6,
     components: [
       { blockId: 'facilitation', qty: 6, label: 'Facilitation', scalable: true },
       { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true },
@@ -705,7 +777,6 @@ const PACKAGES = [
     ] },
   { id: 'edu-full', pathway: 'educators', name: 'Full Agency Package', subtitle: '9 hrs + supports', badge: 'Gold Standard',
     desc: 'Our most comprehensive experience \u2014 from understanding AI to designing advanced tools, evaluating impact, and a final showcase.',
-    facilitationHours: 9,
     components: [
       { blockId: 'facilitation', qty: 9, label: 'Facilitation', scalable: true },
       { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true },
@@ -714,75 +785,64 @@ const PACKAGES = [
       { blockId: 'admin-meetings', qty: 1, label: 'Admin Reflection', scalable: false, support: true },
       { blockId: 'coaching', qty: 3, label: 'Coaching', scalable: false }
     ] },
-  // Educators: Smaller Options
+  // ── Educators: Smaller Options ──
   { id: 'edu-intro', pathway: 'educators', name: 'Intro Workshop', subtitle: '90 minutes', badge: 'Quick Start',
     desc: 'Educators learn how AI works and build a simple AI tool. Ideal to introduce key leaders to Playlab.',
-    facilitationHours: 1.5,
     components: [
       { blockId: 'facilitation', qty: 1.5, label: 'Facilitation', scalable: true }
     ] },
   { id: 'edu-powerup', pathway: 'educators', name: 'Power-Up: New Features', subtitle: '3 hrs', badge: 'Renewal Add-On',
     desc: 'Educators explore new Playlab features (python, voice, knowledge graph, etc.) and incorporate them into their builds. 50% discount for renewal partners.',
-    facilitationHours: 3,
     components: [
       { blockId: 'facilitation', qty: 3, label: 'Facilitation', scalable: true },
       { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true }
     ] },
-  // Students
+  // ── Students ──
   { id: 'stu-starter', pathway: 'students', name: 'Starter Sprint', subtitle: '3 hrs', badge: 'Student Sprint',
     desc: 'A foundational introduction where students learn how AI works and build their first simple AI tool.',
-    facilitationHours: 3,
     components: [
       { blockId: 'facilitation', qty: 3, label: 'Student Facilitation', scalable: true }
     ] },
   { id: 'stu-core', pathway: 'students', name: 'Core Sprint', subtitle: '6 hrs', badge: 'Most Popular',
     desc: 'A deeper experience where students intentionally design AI tools that address a real school or community challenge.',
-    facilitationHours: 6,
     components: [
       { blockId: 'facilitation', qty: 6, label: 'Student Facilitation', scalable: true }
     ] },
   { id: 'stu-full', pathway: 'students', name: 'Full Sprint', subtitle: '9 hrs', badge: 'Full Experience',
     desc: 'Our most comprehensive student experience \u2014 from understanding AI to designing advanced tools, culminating in a showcase.',
-    facilitationHours: 9,
     components: [
       { blockId: 'facilitation', qty: 9, label: 'Student Facilitation', scalable: true }
     ] },
   { id: 'stu-pd', pathway: 'students', name: 'Educator PD for Student AI', subtitle: '5\u20137 hrs + supports', badge: 'Educator Prep',
     desc: 'Prepare your educators to deliver student AI experiences. Playlab facilitates training using proven structure, tailored to your chosen curriculum.',
-    facilitationHours: 6,
     components: [
       { blockId: 'facilitation', qty: 6, label: 'Facilitation', scalable: true },
       { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true },
       { blockId: 'admin-meetings', qty: 1, label: 'Admin Planning', scalable: false, support: true }
     ] },
-  // AI Impact
+  // ── AI Impact ──
   { id: 'impact-ideation', pathway: 'impact', name: 'Ideation', subtitle: '~4 hr facilitated session', badge: 'Discovery',
     desc: 'Identify where AI can meaningfully improve teaching, learning, or operations. Teams generate ideas, evaluate feasibility, and select 2\u20133 high-priority use cases.',
-    facilitationHours: null,
     components: [
       { blockId: 'ideation-lp-le', qty: 1, label: 'Ideation (LP + LE)', scalable: false }
     ] },
   { id: 'impact-build', pathway: 'impact', name: 'Tool Build \u2014 Initial', subtitle: '~8 hrs collab + ~16 hrs engineering', badge: 'Build',
     desc: 'Playlab partners with your team to design and build a custom AI tool \u2014 requirements, engineering, and multiple cycles of testing and refinement.',
-    facilitationHours: null,
     components: [
       { blockId: 'tool-build-initial', qty: 1, label: 'Tool Build (Initial)', scalable: false }
     ] },
   { id: 'impact-build-addl', pathway: 'impact', name: 'Tool Build \u2014 Additional', subtitle: 'Streamlined build', badge: 'Build +',
     desc: 'Additional custom AI tool build, streamlined after initial.',
-    facilitationHours: null,
     components: [
       { blockId: 'tool-build-addl', qty: 1, label: 'Tool Build (Additional)', scalable: false }
     ] },
   { id: 'impact-pilot', pathway: 'impact', name: 'Pilot Support', subtitle: '~8 hrs collaboration', badge: 'Pilot',
     desc: 'Design and launch a pilot to test AI tools in real contexts. Plan implementation, train early users, evaluate results, and refine.',
-    facilitationHours: null,
     components: [
       { blockId: 'tool-pilot', qty: 1, label: 'Pilot Support', scalable: false }
     ] },
   { id: 'impact-full', pathway: 'impact', name: 'Full AI Impact Pathway', subtitle: 'Ideation \u2192 Build \u2192 Pilot', badge: 'Highest Value',
     desc: 'All blocks plus three tool builds at a 20% discount. Each block builds toward the next \u2014 from ideation to building solutions to implementing at scale.',
-    facilitationHours: null,
     pathwayDiscount: 0.2,
     components: [
       { blockId: 'ideation-lp-le', qty: 1, label: 'Ideation', scalable: false },
@@ -813,41 +873,12 @@ const ADDONS = [
   { blockId: 'tool-revision-full', label: 'Tool Revision \u2014 Full', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$5,000' }
 ];
 
-// ─── Session Split Logic ──────────────────────────────────────────────────────
-const VALID_DURATIONS = [1, 1.5, 2, 3, 4, 6];
-
-function getSessionSplits(totalHours) {
-  if (!totalHours || totalHours <= 0) return [];
-  const splits = [];
-  // Always include 1 x totalHours
-  splits.push({ count: 1, duration: totalHours });
-  for (const dur of VALID_DURATIONS) {
-    if (dur >= totalHours) continue;
-    if (totalHours % dur === 0) {
-      const count = totalHours / dur;
-      // Avoid duplicate of 1 x totalHours
-      if (count !== 1) {
-        splits.push({ count, duration: dur });
-      }
-    }
-  }
-  return splits;
-}
-
-function formatSplit(split) {
-  return `${split.count} \u00D7 ${split.duration}-hour session${split.count > 1 ? 's' : ''}`;
-}
-
 // ─── Quote State ──────────────────────────────────────────────────────────────
 let quotePackages = [];
 let quoteAddons = [];
 let nextPkgId = 1;
 let nextAddonId = 1;
 let expandedPkgId = null;
-
-// Config state for inline add panel (per package card)
-let activeConfigPkgId = null;
-let configState = {};
 
 // ─── Package Price Calculations ────────────────────────────────────────────────
 function calcPkgComponentTotal(comp, facilitators) {
@@ -856,14 +887,7 @@ function calcPkgComponentTotal(comp, facilitators) {
 }
 
 function calcQuotePkgGross(qpkg) {
-  let total = qpkg.components.reduce((sum, c) => sum + calcPkgComponentTotal(c, qpkg.facilitators), 0);
-  // Add travel cost
-  total += calcTravelCost(qpkg);
-  // Add launch meeting
-  total += qpkg.launchMeetingQty * getBlockPrice('admin-meetings');
-  // Add office hours
-  total += qpkg.officeHoursQty * getBlockPrice('office-hours');
-  return total;
+  return qpkg.components.reduce((sum, c) => sum + calcPkgComponentTotal(c, qpkg.facilitators), 0);
 }
 
 function calcQuotePkgNet(qpkg) {
@@ -871,14 +895,6 @@ function calcQuotePkgNet(qpkg) {
   const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
   const pathwayDisc = pkg?.pathwayDiscount || 0;
   return gross * (1 - pathwayDisc);
-}
-
-function calcTravelCost(qpkg) {
-  if (qpkg.deliveryMode === 'virtual') return 0;
-  const sessions = qpkg.sessionCount || 1;
-  if (qpkg.deliveryMode === 'local') return sessions * getBlockPrice('travel-local');
-  if (qpkg.deliveryMode === 'travel') return sessions * getBlockPrice('travel-flight');
-  return 0;
 }
 
 function calcAddonTotal(addon) {
@@ -892,7 +908,7 @@ function calcServicesTotal() {
 }
 
 function calcStandardTotal() {
-  return calcServicesTotal() + calcTotalSoftware();
+  return calcServicesTotal() + calcTierCost();
 }
 
 function calcDiscount(std) {
@@ -904,7 +920,7 @@ function calcDiscount(std) {
 }
 
 function hasQuoteItems() {
-  return quotePackages.length > 0 || quoteAddons.length > 0 || quoteLicenses.length > 0;
+  return quotePackages.length > 0 || quoteAddons.length > 0 || calcTierCost() > 0;
 }
 
 // ─── Render: Package Catalog ──────────────────────────────────────────────────
@@ -972,13 +988,6 @@ function buildPkgCard(pkg, pathway) {
     return c.label + ' (' + fmt(price) + ')';
   }).join(' \u00B7 ');
 
-  const isConfigOpen = activeConfigPkgId === pkg.id;
-
-  let configHtml = '';
-  if (isConfigOpen) {
-    configHtml = buildInlineConfig(pkg);
-  }
-
   card.innerHTML = `
     <div class="pkg-top">
       <div><div class="pkg-name">${pkg.name}</div><div class="pkg-subtitle">${pkg.subtitle}</div></div>
@@ -990,171 +999,192 @@ function buildPkgCard(pkg, pathway) {
       <div class="pkg-price-note">1 facilitator \u00B7 30 participants</div>
     </div>
     <div class="pkg-components">${compSummary}</div>
-    ${isConfigOpen ? '' : `<button class="pkg-add-btn" onclick="event.stopPropagation(); openConfig('${pkg.id}')">${inQuote ? '+ Add Another' : '+ Add'}</button>`}
-    ${configHtml}`;
+    <button class="pkg-add-btn" onclick="addPackage('${pkg.id}')">${inQuote ? '+ Add Another' : '+ Add to Quote'}</button>`;
   return card;
 }
 
-function buildInlineConfig(pkg) {
-  const cs = configState[pkg.id] || {};
-  const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
+function renderAddonGrid() {
+  const grid = document.getElementById('addonGrid');
+  grid.innerHTML = '';
+  for (const addon of ADDONS) {
+    const inQuote = isAddonInQuote(addon.blockId);
+    const card = document.createElement('div');
+    card.className = 'addon-card' + (inQuote ? ' in-quote' : '');
+    card.onclick = () => addAddon(addon.blockId);
+    card.innerHTML = `<div class="addon-name">${addon.label}</div>
+      <div class="addon-price">${fmt(getBlockPrice(addon.blockId))}/${addon.unit === 'flat' ? 'ea' : addon.unit}</div>
+      <div class="addon-add">${inQuote ? '+ Add Another' : '+ Add'}</div>`;
+    grid.appendChild(card);
+  }
+}
 
-  let splitHtml = '';
-  if (hasFacilitation) {
-    const splits = getSessionSplits(pkg.facilitationHours);
-    const selectedSplit = cs.splitIdx || 0;
-    splitHtml = `<div class="pkg-config-row">
-      <span class="pkg-config-label">Sessions</span>
-      <select class="config-select" onchange="updateConfigSplit('${pkg.id}', this.selectedIndex)">
-        ${splits.map((s, i) => `<option ${i === selectedSplit ? 'selected' : ''}>${formatSplit(s)}</option>`).join('')}
-      </select>
+// ─── Render: Quote Panel ──────────────────────────────────────────────────────
+function renderQuote() {
+  const wrap = document.getElementById('quotePackages');
+
+  if (quotePackages.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><span class="empty-icon">\uD83D\uDCE6</span><span>Select a package from the left to build a quote</span></div>`;
+  } else {
+    wrap.innerHTML = '';
+    for (const qpkg of quotePackages) wrap.appendChild(buildQuotePkg(qpkg));
+  }
+
+  // Add-ons section
+  const addonsWrap = document.getElementById('quoteAddonsWrap');
+  const addonsList = document.getElementById('quoteAddonsList');
+  if (quoteAddons.length > 0) {
+    addonsWrap.style.display = '';
+    addonsList.innerHTML = '';
+    for (const addon of quoteAddons) addonsList.appendChild(buildQuoteAddon(addon));
+  } else {
+    addonsWrap.style.display = 'none';
+  }
+}
+
+function buildQuotePkg(qpkg) {
+  const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
+  const pathway = PATHWAYS.find(pw => pw.id === pkg?.pathway);
+  const gross = calcQuotePkgGross(qpkg);
+  const net = calcQuotePkgNet(qpkg);
+  const isExpanded = expandedPkgId === qpkg.pkgId;
+  const hasScalable = qpkg.components.some(c => c.scalable);
+
+  const div = document.createElement('div');
+  div.className = 'qpkg' + (isExpanded ? ' expanded' : '');
+
+  let bodyHtml = '';
+
+  if (hasScalable) {
+    bodyHtml += `<div class="participants-row">
+      <label>Participants:</label>
+      <input class="participants-input" type="number" min="1" value="${qpkg.participants}"
+             onchange="setParticipants(${qpkg.pkgId}, this)" oninput="setParticipants(${qpkg.pkgId}, this)">
+      <span>\u2192</span>
+      <span class="facilitator-count">${qpkg.facilitators} facilitator${qpkg.facilitators > 1 ? 's' : ''}</span>
+      <span style="font-size:9px;color:#92400e">(1 per 30)</span>
     </div>`;
   }
 
-  const deliveryMode = cs.delivery || 'virtual';
-  const sessionCount = hasFacilitation ? (getSessionSplits(pkg.facilitationHours)[cs.splitIdx || 0]?.count || 1) : 1;
-  const localCost = getBlockPrice('travel-local');
-  const flightCost = getBlockPrice('travel-flight');
+  for (const comp of qpkg.components) {
+    const effQty = comp.scalable ? comp.qty * qpkg.facilitators : comp.qty;
+    const total = getBlockPrice(comp.blockId) * effQty;
+    const unit = comp.blockId === 'facilitation' || comp.blockId === 'coaching' || comp.blockId === 'office-hours' || comp.blockId === 'admin-meetings' ? 'hr' : 'flat';
+    const tags = [];
+    if (comp.support) tags.push('<span class="support-tag">support</span>');
+    if (comp.scalable && qpkg.facilitators > 1) tags.push(`<span class="scale-tag">\u00D7${qpkg.facilitators}</span>`);
 
-  const deliveryHtml = `<div class="pkg-config-row">
-    <span class="pkg-config-label">Delivery</span>
-    <div class="delivery-pills">
-      <button class="delivery-pill ${deliveryMode === 'virtual' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','virtual')">Virtual<span class="pill-cost">+$0</span></button>
-      <button class="delivery-pill ${deliveryMode === 'local' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','local')">Local<span class="pill-cost">+${fmt(localCost)}/s</span></button>
-      <button class="delivery-pill ${deliveryMode === 'travel' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','travel')">Travel<span class="pill-cost">+${fmt(flightCost)}/s</span></button>
-    </div>
-  </div>`;
-
-  const participants = cs.participants || 30;
-  const participantsHtml = hasFacilitation ? `<div class="pkg-config-row">
-    <span class="pkg-config-label">Participants</span>
-    <input class="config-participants" type="number" min="1" value="${participants}" onchange="updateConfigParticipants('${pkg.id}', this)" oninput="updateConfigParticipants('${pkg.id}', this)">
-    <span style="font-size:10px;color:var(--slate-400)">\u2192 ${Math.max(1, Math.ceil(participants / 30))} facilitator${Math.max(1, Math.ceil(participants / 30)) > 1 ? 's' : ''}</span>
-  </div>` : '';
-
-  // Preview cost
-  const previewCost = calcConfigPreview(pkg);
-
-  return `<div class="pkg-config">
-    ${splitHtml}
-    ${deliveryHtml}
-    ${participantsHtml}
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding-top:4px;border-top:1px solid var(--slate-200)">
-      <span style="color:var(--slate-500);font-weight:500">Estimated total</span>
-      <span style="font-weight:800;color:var(--sky-700)">${fmt(previewCost)}</span>
-    </div>
-    <button class="config-confirm-btn" onclick="confirmAddPackage('${pkg.id}')">Add to Builder</button>
-    <button style="width:100%;padding:5px;background:none;border:none;font-family:'Lexend',sans-serif;font-size:10px;color:var(--slate-400);cursor:pointer" onclick="closeConfig()">Cancel</button>
-  </div>`;
-}
-
-function calcConfigPreview(pkg) {
-  const cs = configState[pkg.id] || {};
-  const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
-  const participants = cs.participants || 30;
-  const facilitators = Math.max(1, Math.ceil(participants / 30));
-  const splits = hasFacilitation ? getSessionSplits(pkg.facilitationHours) : [];
-  const split = splits[cs.splitIdx || 0] || { count: 1, duration: pkg.facilitationHours || 0 };
-  const sessionCount = split.count;
-  const deliveryMode = cs.delivery || 'virtual';
-
-  // Base component cost
-  let cost = pkg.components.reduce((sum, c) => {
-    const effQty = c.scalable ? c.qty * facilitators : c.qty;
-    return sum + getBlockPrice(c.blockId) * effQty;
-  }, 0);
-
-  // Apply pathway discount
-  if (pkg.pathwayDiscount) cost *= (1 - pkg.pathwayDiscount);
-
-  // Travel
-  if (deliveryMode === 'local') cost += sessionCount * getBlockPrice('travel-local');
-  if (deliveryMode === 'travel') cost += sessionCount * getBlockPrice('travel-flight');
-
-  // Auto-included: launch meeting + office hours
-  if (hasFacilitation) {
-    cost += 1 * getBlockPrice('admin-meetings'); // launch meeting
-    cost += Math.max(0, sessionCount - 1) * getBlockPrice('office-hours'); // office hours
+    bodyHtml += `<div class="comp-line ${comp.support ? 'support' : ''}">
+      <div class="comp-info"><div class="comp-name">${comp.label}${tags.join('')}</div></div>
+      <div class="comp-qty">
+        <button class="comp-qty-btn" onclick="changeCompQty(${qpkg.pkgId},'${comp.id}',-1)">−</button>
+        <input class="comp-qty-input" type="number" value="${comp.qty}" min="0.5" step="0.5"
+               onchange="setCompQty(${qpkg.pkgId},'${comp.id}',this)">
+        <span class="comp-unit">${unitShort(unit)}</span>
+        <button class="comp-qty-btn" onclick="changeCompQty(${qpkg.pkgId},'${comp.id}',1)">+</button>
+      </div>
+      <div class="comp-total">${fmt(total)}</div>
+    </div>`;
   }
 
-  return cost;
-}
-
-function openConfig(pkgId) {
-  activeConfigPkgId = pkgId;
-  if (!configState[pkgId]) {
-    configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
+  if (pkg?.pathwayDiscount) {
+    const discAmt = gross * pkg.pathwayDiscount;
+    bodyHtml += `<div class="pathway-discount-row">
+      <span class="pathway-discount-label">Pathway Discount (${Math.round(pkg.pathwayDiscount * 100)}%)</span>
+      <span class="pathway-discount-value">\u2212${fmt(discAmt)}</span>
+    </div>`;
   }
-  renderCatalog();
-  // Scroll to config
-  setTimeout(() => {
-    const card = document.getElementById('pkgcard-' + pkgId);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 50);
+
+  div.innerHTML = `<div class="qpkg-header" onclick="togglePkg(${qpkg.pkgId})">
+      <span class="qpkg-chevron">\u25B6</span>
+      <span class="qpkg-name">${pkg ? pkg.name : 'Package'}</span>
+      <span class="qpkg-total">${fmt(net)}</span>
+      <button class="qpkg-delete" onclick="event.stopPropagation(); removePkg(${qpkg.pkgId})" title="Remove">\u00D7</button>
+    </div>
+    <div class="qpkg-body">${bodyHtml}</div>`;
+  return div;
 }
 
-function closeConfig() {
-  activeConfigPkgId = null;
-  renderCatalog();
+function buildQuoteAddon(addon) {
+  const total = calcAddonTotal(addon);
+  const unit = unitShort(addon.unit);
+  const div = document.createElement('div');
+  div.className = 'addon-line';
+  div.innerHTML = `<div class="comp-info"><div class="comp-name">${addon.label}</div></div>
+    <div class="comp-qty">
+      <button class="comp-qty-btn" onclick="changeAddonQty(${addon.addonId},-1)">−</button>
+      <input class="comp-qty-input" type="number" value="${addon.qty}" min="${addon.minQty}" step="${addon.step}"
+             onchange="setAddonQty(${addon.addonId},this)">
+      <span class="comp-unit">${unit}</span>
+      <button class="comp-qty-btn" onclick="changeAddonQty(${addon.addonId},1)">+</button>
+    </div>
+    <div class="comp-total">${fmt(total)}</div>
+    <button class="qpkg-delete" onclick="removeAddon(${addon.addonId})" title="Remove" style="width:18px;height:18px;font-size:14px">\u00D7</button>`;
+  return div;
 }
 
-function updateConfigSplit(pkgId, idx) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  configState[pkgId].splitIdx = idx;
-  renderCatalog();
+// ─── Render: Totals ────────────────────────────────────────────────────────────
+function renderTotals() {
+  const services = calcServicesTotal();
+  const software = calcTierCost();
+  const std = services + software;
+  const disc = calcDiscount(std);
+  const partner = std - disc;
+  const has = hasQuoteItems();
+
+  document.getElementById('servicesTotal').textContent = has ? fmt(services) : '\u2014';
+  document.getElementById('softwareTotal').textContent = has ? fmt(software) : '\u2014';
+  document.getElementById('standardTotal').textContent = has ? fmt(std) : '\u2014';
+  document.getElementById('discountDisplay').textContent = disc > 0 ? '\u2212' + fmt(disc) : '';
+  document.getElementById('partnerPrice').textContent = has ? fmt(partner) : '\u2014';
+
+  const sn = document.getElementById('savingsNote');
+  if (disc > 0 && has) {
+    sn.textContent = `Partner saves ${fmt(disc)} \u2014 ${Math.round(disc / std * 100)}% off standard`;
+    sn.classList.add('show');
+  } else { sn.classList.remove('show'); }
+
+  renderInsights();
+  saveToUrl();
 }
 
-function updateConfigDelivery(pkgId, mode) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  configState[pkgId].delivery = mode;
-  renderCatalog();
+function renderInsights() {
+  const section = document.getElementById('insightsSection');
+  const has = hasQuoteItems();
+  section.style.display = has ? '' : 'none';
+  if (!has) return;
+
+  const std = calcStandardTotal();
+  const disc = calcDiscount(std);
+  const partner = std - disc;
+
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+  document.getElementById('perStudentCost').textContent = students > 0 ? fmt(Math.round(partner / students)) + '/student' : '\u2014';
+  document.getElementById('perEducatorCost').textContent = educators > 0 ? fmt(Math.round(partner / educators)) + '/educator' : '\u2014';
 }
 
-function updateConfigParticipants(pkgId, input) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  let val = parseInt(input.value);
-  if (isNaN(val) || val < 1) val = 1;
-  configState[pkgId].participants = val;
-  renderCatalog();
-}
-
-function confirmAddPackage(pkgId) {
-  const pkg = PACKAGES.find(p => p.id === pkgId);
+// ─── Actions ──────────────────────────────────────────────────────────────────
+function addPackage(packageId) {
+  const pkg = PACKAGES.find(p => p.id === packageId);
   if (!pkg) return;
-  const cs = configState[pkgId] || { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
-  const splits = hasFacilitation ? getSessionSplits(pkg.facilitationHours) : [];
-  const split = splits[cs.splitIdx || 0] || { count: 1, duration: pkg.facilitationHours || 0 };
-  const participants = cs.participants || 30;
-  const facilitators = Math.max(1, Math.ceil(participants / 30));
-
   let compId = 1;
-  const components = pkg.components.map(c => ({ ...c, id: 'c' + compId++ }));
-
+  const components = pkg.components.map(c => ({
+    ...c,
+    id: 'c' + compId++
+  }));
   const qpkg = {
     pkgId: nextPkgId++,
-    packageId: pkgId,
-    participants,
-    facilitators,
-    deliveryMode: cs.delivery || 'virtual',
-    sessionCount: split.count,
-    sessionDuration: split.duration,
-    launchMeetingQty: hasFacilitation ? 1 : 0,
-    officeHoursQty: hasFacilitation ? Math.max(0, split.count - 1) : 0,
+    packageId,
+    participants: 30,
+    facilitators: 1,
     components
   };
   quotePackages.push(qpkg);
   expandedPkgId = qpkg.pkgId;
-  activeConfigPkgId = null;
   renderCatalog();
   renderQuote();
   renderTotals();
   showToast('Added: ' + pkg.name);
-}
-
-// Direct add for impact pathway packages (no config needed - but we still show config for delivery mode)
-function addPackage(packageId) {
-  openConfig(packageId);
 }
 
 function removePkg(pkgId) {
@@ -1206,27 +1236,6 @@ function setCompQty(pkgId, compId, input) {
   renderTotals();
 }
 
-function changeAutoQty(pkgId, field, dir) {
-  const qpkg = quotePackages.find(q => q.pkgId === pkgId);
-  if (!qpkg) return;
-  const step = field === 'launchMeetingQty' ? 1 : 1;
-  const newVal = qpkg[field] + dir * step;
-  if (newVal < 0) return;
-  qpkg[field] = newVal;
-  renderQuote();
-  renderTotals();
-}
-
-function setAutoQty(pkgId, field, input) {
-  const qpkg = quotePackages.find(q => q.pkgId === pkgId);
-  if (!qpkg) return;
-  let val = parseFloat(input.value);
-  if (isNaN(val) || val < 0) val = 0;
-  qpkg[field] = Math.round(val * 2) / 2;
-  renderQuote();
-  renderTotals();
-}
-
 function addAddon(blockId) {
   const def = ADDONS.find(a => a.blockId === blockId);
   if (!def) return;
@@ -1272,305 +1281,12 @@ function setAddonQty(addonId, input) {
   renderTotals();
 }
 
-// ─── Render: Software Cards (Left Panel) ──────────────────────────────────────
-function renderSwCards() {
-  const grid = document.getElementById('swGrid');
-  grid.innerHTML = '';
-  for (const tier of SOFTWARE_TIERS) {
-    const card = document.createElement('div');
-    card.className = 'sw-card';
-    card.id = 'sw-' + tier.id;
-    const defaultCount = tier.defaultCount;
-    const cost = tier.pricePerUnit * defaultCount;
-    card.innerHTML = `
-      <div class="sw-card-name">${tier.name}</div>
-      <div class="sw-card-tagline">${tier.tagline}</div>
-      <div class="sw-card-price">$${tier.pricePerUnit}/${tier.unitLabel}/year</div>
-      <div class="sw-card-row">
-        <label>${tier.unitLabel === 'user' ? 'Users' : 'Students'}:</label>
-        <input class="sw-count-input" type="number" min="${tier.minCount}" value="${defaultCount}" id="sw-input-${tier.id}"
-               ${tier.minCount === 1000 ? 'step="100"' : ''}>
-        <span class="sw-card-computed">${fmt(cost)}/yr</span>
-      </div>
-      <button class="sw-add-btn" onclick="addLicenseFromCard('${tier.id}')">+ Add License</button>`;
-    grid.appendChild(card);
-
-    // Add input listener for computed price
-    const input = card.querySelector('.sw-count-input');
-    const computed = card.querySelector('.sw-card-computed');
-    input.addEventListener('input', () => {
-      const v = parseInt(input.value) || tier.defaultCount;
-      computed.textContent = fmt(tier.pricePerUnit * v) + '/yr';
-    });
-  }
-}
-
-function addLicenseFromCard(tierId) {
-  const input = document.getElementById('sw-input-' + tierId);
-  const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
-  let count = parseInt(input.value) || tier.defaultCount;
-  if (count < tier.minCount) count = tier.minCount;
-  addLicense(tierId, count);
-}
-
-// ─── Render: License List (Right Panel) ──────────────────────────────────────
-function renderLicenseList() {
-  const list = document.getElementById('licenseList');
-  const wrap = document.getElementById('licenseSummaryWrap');
-
-  if (quoteLicenses.length === 0) {
-    list.innerHTML = '<div style="font-size:11px;color:var(--slate-400);padding:8px 0">No licenses added yet</div>';
-    return;
-  }
-
-  list.innerHTML = '';
-  for (const lic of quoteLicenses) {
-    const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-    if (!tier) continue;
-    const cost = calcLicenseCost(lic);
-    const div = document.createElement('div');
-    div.className = 'license-line';
-    div.style.marginBottom = '6px';
-    div.innerHTML = `
-      <div class="comp-info">
-        <div class="license-name">${tier.name}</div>
-        <div class="license-detail">${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/yr</div>
-      </div>
-      <div class="comp-qty">
-        <input class="comp-qty-input" type="number" min="${tier.minCount}" value="${lic.count}" style="width:60px"
-               ${tier.minCount === 1000 ? 'step="100"' : ''}
-               onchange="updateLicenseCount(${lic.licenseId}, this, true)"
-               oninput="updateLicenseCount(${lic.licenseId}, this, false)">
-      </div>
-      <span class="license-price">${fmt(cost)}/yr</span>
-      <button class="qpkg-delete" onclick="removeLicense(${lic.licenseId})" title="Remove" style="width:18px;height:18px;font-size:14px">\u00D7</button>`;
-    list.appendChild(div);
-  }
-}
-
-// ─── Render: Add-on Grid (Left Panel) ────────────────────────────────────────
-function renderAddonGrid() {
-  const grid = document.getElementById('addonGrid');
-  grid.innerHTML = '';
-  for (const addon of ADDONS) {
-    const inQuote = isAddonInQuote(addon.blockId);
-    const card = document.createElement('div');
-    card.className = 'addon-card' + (inQuote ? ' in-quote' : '');
-    card.onclick = () => addAddon(addon.blockId);
-    card.innerHTML = `<div class="addon-name">${addon.label}</div>
-      <div class="addon-price">${fmt(getBlockPrice(addon.blockId))}/${addon.unit === 'flat' ? 'ea' : addon.unit}</div>
-      <div class="addon-add">${inQuote ? '+ Add Another' : '+ Add'}</div>`;
-    grid.appendChild(card);
-  }
-}
-
-// ─── Render: Quote Panel ──────────────────────────────────────────────────────
-function renderQuote() {
-  const wrap = document.getElementById('quotePackages');
-
-  if (quotePackages.length === 0) {
-    wrap.innerHTML = '<div class="empty-state"><span class="empty-icon">\uD83D\uDCE6</span><span>Add packages from the left to build a quote</span></div>';
-  } else {
-    wrap.innerHTML = '';
-    for (const qpkg of quotePackages) wrap.appendChild(buildQuotePkg(qpkg));
-  }
-
-  // Add-ons section
-  const addonsWrap = document.getElementById('quoteAddonsWrap');
-  const addonsList = document.getElementById('quoteAddonsList');
-  if (quoteAddons.length > 0) {
-    addonsWrap.style.display = '';
-    addonsList.innerHTML = '';
-    for (const addon of quoteAddons) addonsList.appendChild(buildQuoteAddon(addon));
-  } else {
-    addonsWrap.style.display = 'none';
-  }
-}
-
-function buildQuotePkg(qpkg) {
-  const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
-  const pathway = PATHWAYS.find(pw => pw.id === pkg?.pathway);
-  const gross = calcQuotePkgGross(qpkg);
-  const net = calcQuotePkgNet(qpkg);
-  const isExpanded = expandedPkgId === qpkg.pkgId;
-  const hasScalable = qpkg.components.some(c => c.scalable);
-  const hasFacilitation = pkg && pkg.facilitationHours && pkg.facilitationHours > 0;
-
-  const div = document.createElement('div');
-  div.className = 'qpkg' + (isExpanded ? ' expanded' : '');
-
-  let bodyHtml = '';
-
-  // Delivery mode badge
-  const deliveryBadge = `<span class="delivery-badge ${qpkg.deliveryMode}">${qpkg.deliveryMode}</span>`;
-
-  // Session info
-  if (hasFacilitation && qpkg.sessionCount && qpkg.sessionDuration) {
-    bodyHtml += `<div class="session-info">${qpkg.sessionCount} \u00D7 ${qpkg.sessionDuration}-hour session${qpkg.sessionCount > 1 ? 's' : ''} \u00B7 ${qpkg.deliveryMode}</div>`;
-  }
-
-  if (hasScalable) {
-    bodyHtml += `<div class="participants-row">
-      <label>Participants:</label>
-      <input class="participants-input" type="number" min="1" value="${qpkg.participants}"
-             onchange="setParticipants(${qpkg.pkgId}, this)" oninput="setParticipants(${qpkg.pkgId}, this)">
-      <span>\u2192</span>
-      <span class="facilitator-count">${qpkg.facilitators} facilitator${qpkg.facilitators > 1 ? 's' : ''}</span>
-      <span style="font-size:9px;color:#92400e">(1 per 30)</span>
-    </div>`;
-  }
-
-  // Regular components
-  for (const comp of qpkg.components) {
-    const effQty = comp.scalable ? comp.qty * qpkg.facilitators : comp.qty;
-    const total = getBlockPrice(comp.blockId) * effQty;
-    const unit = comp.blockId === 'facilitation' || comp.blockId === 'coaching' || comp.blockId === 'office-hours' || comp.blockId === 'admin-meetings' ? 'hr' : 'flat';
-    const tags = [];
-    if (comp.support) tags.push('<span class="support-tag">support</span>');
-    if (comp.scalable && qpkg.facilitators > 1) tags.push(`<span class="scale-tag">\u00D7${qpkg.facilitators}</span>`);
-
-    bodyHtml += `<div class="comp-line ${comp.support ? 'support' : ''}">
-      <div class="comp-info"><div class="comp-name">${comp.label}${tags.join('')}</div></div>
-      <div class="comp-qty">
-        <button class="comp-qty-btn" onclick="changeCompQty(${qpkg.pkgId},'${comp.id}',-1)">\u2212</button>
-        <input class="comp-qty-input" type="number" value="${comp.qty}" min="0.5" step="0.5"
-               onchange="setCompQty(${qpkg.pkgId},'${comp.id}',this)">
-        <span class="comp-unit">${unitShort(unit)}</span>
-        <button class="comp-qty-btn" onclick="changeCompQty(${qpkg.pkgId},'${comp.id}',1)">+</button>
-      </div>
-      <div class="comp-total">${fmt(total)}</div>
-    </div>`;
-  }
-
-  // Travel cost line
-  const travelCost = calcTravelCost(qpkg);
-  if (travelCost > 0) {
-    const travelLabel = qpkg.deliveryMode === 'local' ? 'Travel (Local)' : 'Travel (Flight)';
-    const travelUnit = qpkg.deliveryMode === 'local' ? fmt(getBlockPrice('travel-local')) : fmt(getBlockPrice('travel-flight'));
-    bodyHtml += `<div class="comp-line travel-line">
-      <div class="comp-info"><div class="comp-name">${travelLabel} <span style="font-size:9px;color:var(--slate-400)">${qpkg.sessionCount} session${qpkg.sessionCount > 1 ? 's' : ''} \u00D7 ${travelUnit}</span></div></div>
-      <div class="comp-total">${fmt(travelCost)}</div>
-    </div>`;
-  }
-
-  // Auto-included: Launch Meeting
-  if (qpkg.launchMeetingQty > 0 || hasFacilitation) {
-    const lmTotal = qpkg.launchMeetingQty * getBlockPrice('admin-meetings');
-    bodyHtml += `<div class="comp-line support">
-      <div class="comp-info"><div class="comp-name">Launch Meeting<span class="auto-tag">auto</span></div></div>
-      <div class="comp-qty">
-        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'launchMeetingQty',-1)">\u2212</button>
-        <input class="comp-qty-input" type="number" value="${qpkg.launchMeetingQty}" min="0" step="1"
-               onchange="setAutoQty(${qpkg.pkgId},'launchMeetingQty',this)">
-        <span class="comp-unit">\u00D7</span>
-        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'launchMeetingQty',1)">+</button>
-      </div>
-      <div class="comp-total">${fmt(lmTotal)}</div>
-    </div>`;
-  }
-
-  // Auto-included: Office Hours
-  if (qpkg.officeHoursQty > 0 || hasFacilitation) {
-    const ohTotal = qpkg.officeHoursQty * getBlockPrice('office-hours');
-    bodyHtml += `<div class="comp-line support">
-      <div class="comp-info"><div class="comp-name">Office Hours<span class="auto-tag">auto</span><span style="font-size:9px;color:var(--slate-400);margin-left:4px">(sessions\u22121)</span></div></div>
-      <div class="comp-qty">
-        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'officeHoursQty',-1)">\u2212</button>
-        <input class="comp-qty-input" type="number" value="${qpkg.officeHoursQty}" min="0" step="1"
-               onchange="setAutoQty(${qpkg.pkgId},'officeHoursQty',this)">
-        <span class="comp-unit">hr</span>
-        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'officeHoursQty',1)">+</button>
-      </div>
-      <div class="comp-total">${fmt(ohTotal)}</div>
-    </div>`;
-  }
-
-  // Pathway discount
-  if (pkg?.pathwayDiscount) {
-    const discAmt = gross * pkg.pathwayDiscount;
-    bodyHtml += `<div class="pathway-discount-row">
-      <span class="pathway-discount-label">Pathway Discount (${Math.round(pkg.pathwayDiscount * 100)}%)</span>
-      <span class="pathway-discount-value">\u2212${fmt(discAmt)}</span>
-    </div>`;
-  }
-
-  div.innerHTML = `<div class="qpkg-header" onclick="togglePkg(${qpkg.pkgId})">
-      <span class="qpkg-chevron">\u25B6</span>
-      <span class="qpkg-name">${pkg ? pkg.name : 'Package'}${deliveryBadge}</span>
-      <span class="qpkg-total">${fmt(net)}</span>
-      <button class="qpkg-delete" onclick="event.stopPropagation(); removePkg(${qpkg.pkgId})" title="Remove">\u00D7</button>
-    </div>
-    <div class="qpkg-body">${bodyHtml}</div>`;
-  return div;
-}
-
-function buildQuoteAddon(addon) {
-  const total = calcAddonTotal(addon);
-  const unit = unitShort(addon.unit);
-  const div = document.createElement('div');
-  div.className = 'addon-line';
-  div.innerHTML = `<div class="comp-info"><div class="comp-name">${addon.label}</div></div>
-    <div class="comp-qty">
-      <button class="comp-qty-btn" onclick="changeAddonQty(${addon.addonId},-1)">\u2212</button>
-      <input class="comp-qty-input" type="number" value="${addon.qty}" min="${addon.minQty}" step="${addon.step}"
-             onchange="setAddonQty(${addon.addonId},this)">
-      <span class="comp-unit">${unit}</span>
-      <button class="comp-qty-btn" onclick="changeAddonQty(${addon.addonId},1)">+</button>
-    </div>
-    <div class="comp-total">${fmt(total)}</div>
-    <button class="qpkg-delete" onclick="removeAddon(${addon.addonId})" title="Remove" style="width:18px;height:18px;font-size:14px">\u00D7</button>`;
-  return div;
-}
-
-// ─── Render: Totals ────────────────────────────────────────────────────────────
-function renderTotals() {
-  const services = calcServicesTotal();
-  const software = calcTotalSoftware();
-  const std = services + software;
-  const disc = calcDiscount(std);
-  const partner = std - disc;
-  const has = hasQuoteItems();
-
-  document.getElementById('servicesTotal').textContent = has ? fmt(services) : '\u2014';
-  document.getElementById('softwareTotal').textContent = has ? fmt(software) : '\u2014';
-  document.getElementById('standardTotal').textContent = has ? fmt(std) : '\u2014';
-  document.getElementById('discountDisplay').textContent = disc > 0 ? '\u2212' + fmt(disc) : '';
-  document.getElementById('partnerPrice').textContent = has ? fmt(partner) : '\u2014';
-
-  const sn = document.getElementById('savingsNote');
-  if (disc > 0 && has) {
-    sn.textContent = `Partner saves ${fmt(disc)} \u2014 ${Math.round(disc / std * 100)}% off standard`;
-    sn.classList.add('show');
-  } else { sn.classList.remove('show'); }
-
-  renderInsights();
-  saveToUrl();
-}
-
-function renderInsights() {
-  const section = document.getElementById('insightsSection');
-  const has = hasQuoteItems();
-  section.style.display = has ? '' : 'none';
-  if (!has) return;
-
-  const std = calcStandardTotal();
-  const disc = calcDiscount(std);
-  const partner = std - disc;
-
-  const students = parseInt(document.getElementById('studentCount').value) || 0;
-  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
-  document.getElementById('perStudentCost').textContent = students > 0 ? fmt(Math.round(partner / students)) + '/student' : '\u2014';
-  document.getElementById('perEducatorCost').textContent = educators > 0 ? fmt(Math.round(partner / educators)) + '/educator' : '\u2014';
-}
-
-// ─── Clear All ──────────────────────────────────────────────────────────────────
 function clearAll() {
   quotePackages = [];
   quoteAddons = [];
-  quoteLicenses = [];
   expandedPkgId = null;
-  activeConfigPkgId = null;
-  configState = {};
+  selectedTierId = 'impact-schools';
+  tierCounts = { impact: 5, 'impact-schools': 1000 };
   rates = { ...DEFAULT_RATES };
   document.getElementById('rateLp').value = DEFAULT_RATES.lp;
   document.getElementById('rateDev').value = DEFAULT_RATES.dev;
@@ -1623,8 +1339,8 @@ function showToast(msg) {
 function renderAll() {
   renderCatalog();
   renderAddonGrid();
-  renderSwCards();
-  renderLicenseList();
+  renderTierCards();
+  renderLicenseSummary();
   renderQuote();
   renderTotals();
 }
@@ -1632,8 +1348,9 @@ function renderAll() {
 // ─── URL State ─────────────────────────────────────────────────────────────────
 function saveToUrl() {
   const state = {
-    v: 3,
     partner: document.getElementById('partnerName').value,
+    tier: selectedTierId,
+    tierCounts,
     currency: selectedCurrency,
     rates: (rates.lp !== DEFAULT_RATES.lp || rates.dev !== DEFAULT_RATES.dev || rates.travel !== DEFAULT_RATES.travel) ? rates : undefined,
     discountVal: document.getElementById('discountVal').value,
@@ -1641,15 +1358,9 @@ function saveToUrl() {
     discountName: document.getElementById('discountName').value,
     students: document.getElementById('studentCount').value,
     educators: document.getElementById('educatorCount').value,
-    licenses: quoteLicenses.map(l => ({ tierId: l.tierId, count: l.count })),
     packages: quotePackages.map(qp => ({
       packageId: qp.packageId,
       participants: qp.participants,
-      deliveryMode: qp.deliveryMode,
-      sessionCount: qp.sessionCount,
-      sessionDuration: qp.sessionDuration,
-      launchMeetingQty: qp.launchMeetingQty,
-      officeHoursQty: qp.officeHoursQty,
       components: qp.components.map(c => ({ id: c.id, qty: c.qty }))
     })),
     addons: quoteAddons.map(a => ({ blockId: a.blockId, qty: a.qty }))
@@ -1666,6 +1377,8 @@ function loadFromUrl() {
   try {
     const state = JSON.parse(atob(hash));
     if (state.partner) document.getElementById('partnerName').value = state.partner;
+    if (state.tier) selectedTierId = state.tier;
+    if (state.tierCounts) tierCounts = { ...tierCounts, ...state.tierCounts };
     if (state.currency && CURRENCIES[state.currency]) selectedCurrency = state.currency;
     if (state.rates) {
       rates = { ...DEFAULT_RATES, ...state.rates };
@@ -1680,24 +1393,6 @@ function loadFromUrl() {
     if (state.students) document.getElementById('studentCount').value = state.students;
     if (state.educators) document.getElementById('educatorCount').value = state.educators;
 
-    // Load licenses (v3 format)
-    if (state.licenses) {
-      for (const sl of state.licenses) {
-        const tier = SOFTWARE_TIERS.find(t => t.id === sl.tierId);
-        if (!tier) continue;
-        quoteLicenses.push({ licenseId: nextLicenseId++, tierId: sl.tierId, count: sl.count || tier.defaultCount });
-      }
-    }
-    // Backward compat: v2 tier/tierCounts
-    if (!state.licenses && state.tier) {
-      const tierId = state.tier;
-      const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
-      if (tier) {
-        const count = state.tierCounts?.[tierId] || tier.defaultCount;
-        quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count });
-      }
-    }
-
     if (state.packages) {
       for (const sp of state.packages) {
         const pkg = PACKAGES.find(p => p.id === sp.packageId);
@@ -1710,21 +1405,11 @@ function loadFromUrl() {
             if (comp) comp.qty = sc.qty;
           }
         }
-        const participants = sp.participants || 30;
-        const hasFac = pkg.facilitationHours && pkg.facilitationHours > 0;
-        const sessionCount = sp.sessionCount || (hasFac ? 1 : 1);
-        const sessionDuration = sp.sessionDuration || (hasFac ? pkg.facilitationHours : 0);
-
         const qpkg = {
           pkgId: nextPkgId++,
           packageId: sp.packageId,
-          participants,
-          facilitators: Math.max(1, Math.ceil(participants / 30)),
-          deliveryMode: sp.deliveryMode || 'virtual',
-          sessionCount,
-          sessionDuration,
-          launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : (hasFac ? 1 : 0),
-          officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessionCount - 1) : 0),
+          participants: sp.participants || 30,
+          facilitators: Math.max(1, Math.ceil((sp.participants || 30) / 30)),
           components
         };
         quotePackages.push(qpkg);
@@ -1765,6 +1450,9 @@ function copyForProposal() {
   const W = 52;
   const pad = (l, r) => l + ' ' + '.'.repeat(Math.max(2, W - l.length - r.length - 1)) + ' ' + r;
 
+  const tier = getSelectedTier();
+  const tierCost = calcTierCost();
+
   const lines = [];
   lines.push(`${partner} x Playlab \u2014 Partnership Proposal`);
   lines.push(`Date: ${today}`);
@@ -1775,17 +1463,13 @@ function copyForProposal() {
   lines.push('');
 
   // Software
-  if (quoteLicenses.length > 0) {
-    lines.push('SOFTWARE & LICENSING');
-    lines.push('\u2500'.repeat(W));
-    for (const lic of quoteLicenses) {
-      const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-      if (!tier) continue;
-      const cost = calcLicenseCost(lic);
-      lines.push(pad(`  \u2022 Playlab ${tier.name} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/yr`, fmt(cost)));
-    }
-    lines.push('');
-  }
+  lines.push('SOFTWARE & LICENSING');
+  lines.push('\u2500'.repeat(W));
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'impact') tierDetail = `${tier.priceLabel} \u00D7 ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') tierDetail = `${tier.priceLabel} \u00D7 ${tierCounts['impact-schools'].toLocaleString()} students`;
+  lines.push(pad(`  \u2022 Playlab ${tier.name} \u2014 ${tierDetail}`, fmt(tierCost)));
+  lines.push('');
 
   // Services
   if (quotePackages.length > 0 || quoteAddons.length > 0) {
@@ -1796,27 +1480,12 @@ function copyForProposal() {
       const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
       const net = calcQuotePkgNet(qpkg);
       lines.push('');
-      const deliveryTag = qpkg.deliveryMode !== 'virtual' ? ` [${qpkg.deliveryMode}]` : '';
-      lines.push(pad(`  ${pkg ? pkg.name : 'Package'}${deliveryTag}`, fmt(net)));
-      if (qpkg.sessionCount && qpkg.sessionDuration) {
-        lines.push(`    ${qpkg.sessionCount} \u00D7 ${qpkg.sessionDuration}-hour session${qpkg.sessionCount > 1 ? 's' : ''}`);
-      }
+      lines.push(pad(`  ${pkg ? pkg.name : 'Package'}`, fmt(net)));
       for (const comp of qpkg.components) {
         const effQty = comp.scalable ? comp.qty * qpkg.facilitators : comp.qty;
         const total = getBlockPrice(comp.blockId) * effQty;
         const qtyStr = comp.blockId.includes('tool-') || comp.blockId.includes('ideation') ? '' : ` (${effQty} hrs)`;
         lines.push(`    \u2022 ${comp.label}${qtyStr} \u2014 ${fmt(total)}`);
-      }
-      const travelCost = calcTravelCost(qpkg);
-      if (travelCost > 0) {
-        const travelLabel = qpkg.deliveryMode === 'local' ? 'Travel (Local)' : 'Travel (Flight)';
-        lines.push(`    \u2022 ${travelLabel} \u2014 ${fmt(travelCost)}`);
-      }
-      if (qpkg.launchMeetingQty > 0) {
-        lines.push(`    \u2022 Launch Meeting (${qpkg.launchMeetingQty}\u00D7) \u2014 ${fmt(qpkg.launchMeetingQty * getBlockPrice('admin-meetings'))}`);
-      }
-      if (qpkg.officeHoursQty > 0) {
-        lines.push(`    \u2022 Office Hours (${qpkg.officeHoursQty} hrs) \u2014 ${fmt(qpkg.officeHoursQty * getBlockPrice('office-hours'))}`);
       }
       if (pkg?.pathwayDiscount) {
         const discAmt = calcQuotePkgGross(qpkg) * pkg.pathwayDiscount;
@@ -1876,20 +1545,13 @@ function copyAsMarkdown() {
   const std = calcStandardTotal();
   const disc = calcDiscount(std);
   const partnerTotal = std - disc;
+  const tier = getSelectedTier();
+  const tierCost = calcTierCost();
 
   let md = `# ${partner} x Playlab \u2014 Partnership Proposal\n\n`;
-
-  if (quoteLicenses.length > 0) {
-    md += `## Software & Licensing\n\n`;
-    md += `| License | Details | Annual Cost |\n|---|---|---|\n`;
-    for (const lic of quoteLicenses) {
-      const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-      if (!tier) continue;
-      const cost = calcLicenseCost(lic);
-      md += `| Playlab ${tier.name} | ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} | ${fmt(cost)}/yr |\n`;
-    }
-    md += '\n';
-  }
+  md += `## Software & Licensing\n\n`;
+  md += `| Service | Standard Rate | Custom Partner Price |\n|---|---|---|\n`;
+  md += `| Playlab ${tier.name} | ${fmt(tierCost)} | ${fmt(tierCost)} |\n\n`;
 
   md += `## Services\n\n`;
   md += `| Service | Standard Rate | Custom Partner Price |\n|---|---|---|\n`;
@@ -1898,8 +1560,7 @@ function copyAsMarkdown() {
     const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
     const gross = calcQuotePkgGross(qpkg);
     const net = calcQuotePkgNet(qpkg);
-    const deliveryTag = qpkg.deliveryMode !== 'virtual' ? ` [${qpkg.deliveryMode}]` : '';
-    md += `| **${pkg ? pkg.name : 'Package'}${deliveryTag}** | ${fmt(gross)} | ${fmt(net)} |\n`;
+    md += `| **${pkg ? pkg.name : 'Package'}** | ${fmt(gross)} | ${fmt(net)} |\n`;
   }
   for (const addon of quoteAddons) {
     const total = calcAddonTotal(addon);
@@ -1958,6 +1619,8 @@ async function exportToGoogleDoc() {
     const std = calcStandardTotal();
     const disc = calcDiscount(std);
     const partnerTotal = std - disc;
+    const tier = getSelectedTier();
+    const tierCost = calcTierCost();
 
     // Copy template
     const copyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${TEMPLATE_DOC_ID}/copy`, {
@@ -1968,43 +1631,41 @@ async function exportToGoogleDoc() {
     if (!copyRes.ok) throw new Error('Failed to copy template: ' + (await copyRes.text()));
     const { id: docId } = await copyRes.json();
 
+    // Build replacements for unique placeholders
     const requests = [];
 
-    // Build software detail text
-    let tierDetail = 'No software license selected';
-    if (quoteLicenses.length > 0) {
-      tierDetail = quoteLicenses.map(lic => {
-        const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-        return tier ? `Playlab ${tier.name} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/year` : '';
-      }).filter(Boolean).join('; ');
-    }
-
-    const firstLicName = quoteLicenses.length > 0 ? SOFTWARE_TIERS.find(t => t.id === quoteLicenses[0].tierId)?.name || 'Impact' : 'Impact';
+    // Simple text replacements
+    const tierDetail = tier.id === 'impact'
+      ? `Playlab ${tier.name} \u2014 ${tierCounts.impact} user seats @ $200/user/year`
+      : tier.id === 'impact-schools'
+        ? `Playlab ${tier.name} \u2014 ${tierCounts['impact-schools'].toLocaleString()} students @ $3/student/year`
+        : `Playlab ${tier.name} \u2014 ${tier.priceLabel}`;
 
     const replacements = {
       '[Organization]': partner,
       '[One-line description of partnership purpose and shared vision.]': `Building AI literacy and capacity for ${partner} through Playlab\u2019s AI Partnership Pathway.`,
-      '[Tier]': `Playlab ${firstLicName}`,
+      '[Tier]': `Playlab ${tier.name}`,
       '[explanation of software tier specifics]': tierDetail,
-      '$TotalSoftware*': fmtUsd(calcTotalSoftware()),
+      '$TotalSoftware*': fmtUsd(tierCost),
       '$TotalServices*': fmtUsd(calcServicesTotal()),
       '$TotalCost*': fmtUsd(partnerTotal)
     };
 
-    replacements['$X*'] = fmtUsd(calcTotalSoftware());
+    // Handle first $X* (software price in table)
+    replacements['$X*'] = fmtUsd(tierCost);
 
     for (const [old, rep] of Object.entries(replacements)) {
       requests.push({ replaceAllText: { containsText: { text: old, matchCase: true }, replaceText: rep } });
     }
 
-    // Service lines
+    // Handle service rows: replace [Service] and $Y/$Z pairs
+    // We need to replace them in order, so we'll build service lines
     const serviceLines = [];
     for (const qpkg of quotePackages) {
       const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
       const gross = calcQuotePkgGross(qpkg);
       const net = calcQuotePkgNet(qpkg);
       let desc = pkg ? pkg.name : 'Package';
-      if (qpkg.deliveryMode !== 'virtual') desc += ` [${qpkg.deliveryMode}]`;
       if (qpkg.facilitators > 1) desc += ` (${qpkg.facilitators} facilitators)`;
       const compDetails = qpkg.components.map(c => {
         const effQty = c.scalable ? c.qty * qpkg.facilitators : c.qty;
@@ -2018,6 +1679,7 @@ async function exportToGoogleDoc() {
       serviceLines.push({ name: addon.label + qtyStr, detail: '', standard: fmtUsd(total), custom: fmtUsd(total) });
     }
 
+    // Replace first [Service]/$Y/$Z with first service
     if (serviceLines.length >= 1) {
       const s = serviceLines[0];
       requests.push({ replaceAllText: { containsText: { text: '[Service]', matchCase: true }, replaceText: s.name } });
@@ -2050,6 +1712,7 @@ async function exportToGoogleDoc() {
       }
     }
 
+    // Open the doc
     window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
     showToast('Proposal created!');
   } catch (err) {
