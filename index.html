@@ -755,18 +755,7 @@ const PATHWAYS = [
 ];
 
 const PACKAGES = [
-  // ── Educators ──
-  { id: 'edu-intro', pathway: 'educators', name: 'Intro Workshop', subtitle: '90 minutes', badge: 'Quick Start',
-    desc: 'Educators learn how AI works and build a simple AI tool. Ideal to introduce key leaders to Playlab.',
-    components: [
-      { blockId: 'facilitation', qty: 1.5, label: 'Facilitation', scalable: true }
-    ] },
-  { id: 'edu-powerup', pathway: 'educators', name: 'Power-Up: New Features', subtitle: '3 hrs', badge: 'Renewal Add-On',
-    desc: 'Educators explore new Playlab features (python, voice, knowledge graph, etc.) and incorporate them into their builds. 50% discount for renewal partners.',
-    components: [
-      { blockId: 'facilitation', qty: 3, label: 'Facilitation', scalable: true },
-      { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true }
-    ] },
+  // ── Educators: Core Packages ──
   { id: 'edu-starter', pathway: 'educators', name: 'Starter Package', subtitle: '3 hrs + supports', badge: 'Recommended Start',
     desc: 'A foundational introduction where participants learn how AI works and build their first simple AI tool.',
     components: [
@@ -795,6 +784,18 @@ const PACKAGES = [
       { blockId: 'office-hours', qty: 3, label: 'Office Hours', scalable: false, support: true },
       { blockId: 'admin-meetings', qty: 1, label: 'Admin Reflection', scalable: false, support: true },
       { blockId: 'coaching', qty: 3, label: 'Coaching', scalable: false }
+    ] },
+  // ── Educators: Smaller Options ──
+  { id: 'edu-intro', pathway: 'educators', name: 'Intro Workshop', subtitle: '90 minutes', badge: 'Quick Start',
+    desc: 'Educators learn how AI works and build a simple AI tool. Ideal to introduce key leaders to Playlab.',
+    components: [
+      { blockId: 'facilitation', qty: 1.5, label: 'Facilitation', scalable: true }
+    ] },
+  { id: 'edu-powerup', pathway: 'educators', name: 'Power-Up: New Features', subtitle: '3 hrs', badge: 'Renewal Add-On',
+    desc: 'Educators explore new Playlab features (python, voice, knowledge graph, etc.) and incorporate them into their builds. 50% discount for renewal partners.',
+    components: [
+      { blockId: 'facilitation', qty: 3, label: 'Facilitation', scalable: true },
+      { blockId: 'facilitation', qty: 1, label: 'Launch Session', scalable: false, support: true }
     ] },
   // ── Students ──
   { id: 'stu-starter', pathway: 'students', name: 'Starter Sprint', subtitle: '3 hrs', badge: 'Student Sprint',
