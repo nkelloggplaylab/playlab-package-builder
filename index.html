@@ -116,6 +116,32 @@
     .config-confirm-btn { padding: 8px 0; width: 100%; background: var(--emerald-500); color: white; border: none; border-radius: 8px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
     .config-confirm-btn:hover { background: var(--emerald-600); }
 
+    /* Per-session config rows */
+    .session-config-rows { display: flex; flex-direction: column; gap: 6px; }
+    .session-config-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: white; border: 1px solid var(--slate-200); border-radius: 8px; }
+    .session-config-label { font-size: 10px; font-weight: 700; color: var(--slate-500); min-width: 62px; flex-shrink: 0; }
+    .session-hours-input { width: 52px; padding: 4px 6px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: center; -moz-appearance: textfield; }
+    .session-hours-input::-webkit-inner-spin-button, .session-hours-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .session-hours-input:focus { outline: none; border-color: var(--sky-500); }
+    .session-hours-unit { font-size: 9.5px; color: var(--slate-400); font-weight: 600; flex-shrink: 0; }
+    .num-sessions-input { width: 52px; padding: 5px 8px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); text-align: center; -moz-appearance: textfield; }
+    .num-sessions-input::-webkit-inner-spin-button, .num-sessions-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .num-sessions-input:focus { outline: none; border-color: var(--sky-500); }
+
+    /* Compact delivery pills for per-session use */
+    .delivery-pills-sm { display: flex; gap: 3px; flex: 1; }
+    .delivery-pill-sm { padding: 3px 8px; border: 1.5px solid var(--slate-200); border-radius: 14px; font-family: 'Lexend', sans-serif; font-size: 9px; font-weight: 600; color: var(--slate-500); background: white; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .delivery-pill-sm:hover { border-color: var(--sky-300); }
+    .delivery-pill-sm.active { background: var(--sky-500); color: white; border-color: var(--sky-500); }
+
+    /* Session rows in builder (right panel) */
+    .builder-session-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: var(--slate-50); border-radius: 7px; }
+    .builder-session-label { font-size: 10px; font-weight: 700; color: var(--slate-500); min-width: 58px; flex-shrink: 0; }
+    .builder-session-hours { width: 46px; padding: 3px 5px; border: 1.5px solid var(--slate-200); border-radius: 5px; font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 700; color: var(--slate-800); text-align: center; -moz-appearance: textfield; }
+    .builder-session-hours::-webkit-inner-spin-button, .builder-session-hours::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .builder-session-hours:focus { outline: none; border-color: var(--sky-500); }
+    .builder-session-info { font-size: 9.5px; color: var(--slate-400); margin-left: auto; flex-shrink: 0; }
+
     /* Add-on cards */
     .addon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
     .addon-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; transition: border-color 0.15s; cursor: pointer; }
@@ -815,29 +841,28 @@ const ADDONS = [
   { blockId: 'tool-revision-full', label: 'Tool Revision \u2014 Full', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$5,000' }
 ];
 
-// ─── Session Split Logic ──────────────────────────────────────────────────────
-const VALID_DURATIONS = [1, 1.5, 2, 3, 4, 6];
-
-function getSessionSplits(totalHours) {
-  if (!totalHours || totalHours <= 0) return [];
-  const splits = [];
-  // Always include 1 x totalHours
-  splits.push({ count: 1, duration: totalHours });
-  for (const dur of VALID_DURATIONS) {
-    if (dur >= totalHours) continue;
-    if (totalHours % dur === 0) {
-      const count = totalHours / dur;
-      // Avoid duplicate of 1 x totalHours
-      if (count !== 1) {
-        splits.push({ count, duration: dur });
-      }
+// ─── Session Helpers ──────────────────────────────────────────────────────────
+function distributeHours(totalHours, numSessions) {
+  // Distribute totalHours evenly, rounded to nearest 0.5
+  const base = Math.round((totalHours / numSessions) * 2) / 2;
+  const sessions = [];
+  let remaining = totalHours;
+  for (let i = 0; i < numSessions; i++) {
+    if (i === numSessions - 1) {
+      // Last session gets remainder (rounded to 0.5)
+      sessions.push({ hours: Math.round(remaining * 2) / 2, delivery: 'virtual' });
+    } else {
+      const hrs = Math.min(base, remaining);
+      sessions.push({ hours: hrs, delivery: 'virtual' });
+      remaining -= hrs;
     }
   }
-  return splits;
+  return sessions;
 }
 
-function formatSplit(split) {
-  return `${split.count} \u00D7 ${split.duration}-hour session${split.count > 1 ? 's' : ''}`;
+function getMaxSessions(totalHours) {
+  // Max sessions = totalHours / 0.5 (minimum 0.5 hr per session), capped at 12
+  return Math.min(12, Math.floor(totalHours / 0.5));
 }
 
 // ─── Quote State ──────────────────────────────────────────────────────────────
@@ -876,11 +901,13 @@ function calcQuotePkgNet(qpkg) {
 }
 
 function calcTravelCost(qpkg) {
-  if (qpkg.deliveryMode === 'virtual') return 0;
-  const sessions = qpkg.sessionCount || 1;
-  if (qpkg.deliveryMode === 'local') return sessions * getBlockPrice('travel-local');
-  if (qpkg.deliveryMode === 'travel') return sessions * getBlockPrice('travel-flight');
-  return 0;
+  if (!qpkg.sessions || qpkg.sessions.length === 0) return 0;
+  let cost = 0;
+  for (const s of qpkg.sessions) {
+    if (s.delivery === 'local') cost += getBlockPrice('travel-local');
+    if (s.delivery === 'travel') cost += getBlockPrice('travel-flight');
+  }
+  return cost;
 }
 
 function calcAddonTotal(addon) {
@@ -1001,31 +1028,49 @@ function buildInlineConfig(pkg) {
   const cs = configState[pkg.id] || {};
   const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
 
-  let splitHtml = '';
+  let sessionsHtml = '';
   if (hasFacilitation) {
-    const splits = getSessionSplits(pkg.facilitationHours);
-    const selectedSplit = cs.splitIdx || 0;
-    splitHtml = `<div class="pkg-config-row">
+    const numSessions = cs.numSessions || 1;
+    const maxSessions = getMaxSessions(pkg.facilitationHours);
+    const sessions = cs.sessions || distributeHours(pkg.facilitationHours, numSessions);
+    const localCost = getBlockPrice('travel-local');
+    const flightCost = getBlockPrice('travel-flight');
+
+    sessionsHtml = `<div class="pkg-config-row">
       <span class="pkg-config-label">Sessions</span>
-      <select class="config-select" onchange="updateConfigSplit('${pkg.id}', this.selectedIndex)">
-        ${splits.map((s, i) => `<option ${i === selectedSplit ? 'selected' : ''}>${formatSplit(s)}</option>`).join('')}
-      </select>
+      <input class="num-sessions-input" type="number" min="1" max="${maxSessions}" value="${numSessions}"
+             onchange="updateConfigNumSessions('${pkg.id}', this)"
+             oninput="updateConfigNumSessions('${pkg.id}', this)">
+      <span style="font-size:10px;color:var(--slate-400)">session${numSessions > 1 ? 's' : ''} (${pkg.facilitationHours} hrs total)</span>
+    </div>
+    <div class="session-config-rows">
+      ${sessions.map((s, i) => `<div class="session-config-row">
+        <span class="session-config-label">Session ${i + 1}:</span>
+        <input class="session-hours-input" type="number" min="0.5" step="0.5" value="${s.hours}"
+               onchange="updateConfigSessionHours('${pkg.id}', ${i}, this)"
+               oninput="updateConfigSessionHours('${pkg.id}', ${i}, this)">
+        <span class="session-hours-unit">hrs</span>
+        <div class="delivery-pills-sm">
+          <button class="delivery-pill-sm ${s.delivery === 'virtual' ? 'active' : ''}" onclick="updateConfigSessionDelivery('${pkg.id}',${i},'virtual')">Virtual</button>
+          <button class="delivery-pill-sm ${s.delivery === 'local' ? 'active' : ''}" onclick="updateConfigSessionDelivery('${pkg.id}',${i},'local')">Local<span class="pill-cost">+${fmt(localCost)}</span></button>
+          <button class="delivery-pill-sm ${s.delivery === 'travel' ? 'active' : ''}" onclick="updateConfigSessionDelivery('${pkg.id}',${i},'travel')">Travel<span class="pill-cost">+${fmt(flightCost)}</span></button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  } else {
+    // Impact packages without facilitation: single delivery mode selector
+    const delivery = (cs.sessions && cs.sessions[0]?.delivery) || 'virtual';
+    const localCost = getBlockPrice('travel-local');
+    const flightCost = getBlockPrice('travel-flight');
+    sessionsHtml = `<div class="pkg-config-row">
+      <span class="pkg-config-label">Delivery</span>
+      <div class="delivery-pills">
+        <button class="delivery-pill ${delivery === 'virtual' ? 'active' : ''}" onclick="updateConfigImpactDelivery('${pkg.id}','virtual')">Virtual<span class="pill-cost">+$0</span></button>
+        <button class="delivery-pill ${delivery === 'local' ? 'active' : ''}" onclick="updateConfigImpactDelivery('${pkg.id}','local')">Local<span class="pill-cost">+${fmt(localCost)}</span></button>
+        <button class="delivery-pill ${delivery === 'travel' ? 'active' : ''}" onclick="updateConfigImpactDelivery('${pkg.id}','travel')">Travel<span class="pill-cost">+${fmt(flightCost)}</span></button>
+      </div>
     </div>`;
   }
-
-  const deliveryMode = cs.delivery || 'virtual';
-  const sessionCount = hasFacilitation ? (getSessionSplits(pkg.facilitationHours)[cs.splitIdx || 0]?.count || 1) : 1;
-  const localCost = getBlockPrice('travel-local');
-  const flightCost = getBlockPrice('travel-flight');
-
-  const deliveryHtml = `<div class="pkg-config-row">
-    <span class="pkg-config-label">Delivery</span>
-    <div class="delivery-pills">
-      <button class="delivery-pill ${deliveryMode === 'virtual' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','virtual')">Virtual<span class="pill-cost">+$0</span></button>
-      <button class="delivery-pill ${deliveryMode === 'local' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','local')">Local<span class="pill-cost">+${fmt(localCost)}/s</span></button>
-      <button class="delivery-pill ${deliveryMode === 'travel' ? 'active' : ''}" onclick="updateConfigDelivery('${pkg.id}','travel')">Travel<span class="pill-cost">+${fmt(flightCost)}/s</span></button>
-    </div>
-  </div>`;
 
   const participants = cs.participants || 30;
   const participantsHtml = hasFacilitation ? `<div class="pkg-config-row">
@@ -1038,8 +1083,7 @@ function buildInlineConfig(pkg) {
   const previewCost = calcConfigPreview(pkg);
 
   return `<div class="pkg-config">
-    ${splitHtml}
-    ${deliveryHtml}
+    ${sessionsHtml}
     ${participantsHtml}
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;padding-top:4px;border-top:1px solid var(--slate-200)">
       <span style="color:var(--slate-500);font-weight:500">Estimated total</span>
@@ -1055,10 +1099,7 @@ function calcConfigPreview(pkg) {
   const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
   const participants = cs.participants || 30;
   const facilitators = Math.max(1, Math.ceil(participants / 30));
-  const splits = hasFacilitation ? getSessionSplits(pkg.facilitationHours) : [];
-  const split = splits[cs.splitIdx || 0] || { count: 1, duration: pkg.facilitationHours || 0 };
-  const sessionCount = split.count;
-  const deliveryMode = cs.delivery || 'virtual';
+  const sessions = cs.sessions || [{ hours: pkg.facilitationHours || 0, delivery: 'virtual' }];
 
   // Base component cost
   let cost = pkg.components.reduce((sum, c) => {
@@ -1069,14 +1110,16 @@ function calcConfigPreview(pkg) {
   // Apply pathway discount
   if (pkg.pathwayDiscount) cost *= (1 - pkg.pathwayDiscount);
 
-  // Travel
-  if (deliveryMode === 'local') cost += sessionCount * getBlockPrice('travel-local');
-  if (deliveryMode === 'travel') cost += sessionCount * getBlockPrice('travel-flight');
+  // Travel: per-session
+  for (const s of sessions) {
+    if (s.delivery === 'local') cost += getBlockPrice('travel-local');
+    if (s.delivery === 'travel') cost += getBlockPrice('travel-flight');
+  }
 
   // Auto-included: launch meeting + office hours
   if (hasFacilitation) {
     cost += 1 * getBlockPrice('admin-meetings'); // launch meeting
-    cost += Math.max(0, sessionCount - 1) * getBlockPrice('office-hours'); // office hours
+    cost += Math.max(0, sessions.length - 1) * getBlockPrice('office-hours'); // office hours
   }
 
   return cost;
@@ -1085,7 +1128,15 @@ function calcConfigPreview(pkg) {
 function openConfig(pkgId) {
   activeConfigPkgId = pkgId;
   if (!configState[pkgId]) {
-    configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
+    const pkg = PACKAGES.find(p => p.id === pkgId);
+    const hasFac = pkg && pkg.facilitationHours && pkg.facilitationHours > 0;
+    configState[pkgId] = {
+      numSessions: hasFac ? 1 : 1,
+      sessions: hasFac
+        ? distributeHours(pkg.facilitationHours, 1)
+        : [{ hours: 0, delivery: 'virtual' }],
+      participants: 30
+    };
   }
   renderCatalog();
   // Scroll to config
@@ -1100,35 +1151,75 @@ function closeConfig() {
   renderCatalog();
 }
 
-function updateConfigSplit(pkgId, idx) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  configState[pkgId].splitIdx = idx;
+function ensureConfigState(pkgId) {
+  if (!configState[pkgId]) {
+    const pkg = PACKAGES.find(p => p.id === pkgId);
+    const hasFac = pkg && pkg.facilitationHours && pkg.facilitationHours > 0;
+    configState[pkgId] = {
+      numSessions: 1,
+      sessions: hasFac ? distributeHours(pkg.facilitationHours, 1) : [{ hours: 0, delivery: 'virtual' }],
+      participants: 30
+    };
+  }
+  return configState[pkgId];
+}
+
+function updateConfigNumSessions(pkgId, input) {
+  const cs = ensureConfigState(pkgId);
+  const pkg = PACKAGES.find(p => p.id === pkgId);
+  const totalHours = pkg?.facilitationHours || 1;
+  let val = parseInt(input.value);
+  const maxS = getMaxSessions(totalHours);
+  if (isNaN(val) || val < 1) val = 1;
+  if (val > maxS) val = maxS;
+  cs.numSessions = val;
+  // Redistribute hours, preserving delivery modes where possible
+  const oldSessions = cs.sessions || [];
+  const newSessions = distributeHours(totalHours, val);
+  for (let i = 0; i < newSessions.length; i++) {
+    if (i < oldSessions.length) newSessions[i].delivery = oldSessions[i].delivery;
+  }
+  cs.sessions = newSessions;
   renderCatalog();
 }
 
-function updateConfigDelivery(pkgId, mode) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
-  configState[pkgId].delivery = mode;
+function updateConfigSessionHours(pkgId, idx, input) {
+  const cs = ensureConfigState(pkgId);
+  let val = parseFloat(input.value);
+  if (isNaN(val) || val < 0.5) val = 0.5;
+  val = Math.round(val * 2) / 2; // round to 0.5
+  cs.sessions[idx].hours = val;
+  renderCatalog();
+}
+
+function updateConfigSessionDelivery(pkgId, idx, mode) {
+  const cs = ensureConfigState(pkgId);
+  cs.sessions[idx].delivery = mode;
+  renderCatalog();
+}
+
+function updateConfigImpactDelivery(pkgId, mode) {
+  const cs = ensureConfigState(pkgId);
+  cs.sessions = [{ hours: 0, delivery: mode }];
   renderCatalog();
 }
 
 function updateConfigParticipants(pkgId, input) {
-  if (!configState[pkgId]) configState[pkgId] = { splitIdx: 0, delivery: 'virtual', participants: 30 };
+  const cs = ensureConfigState(pkgId);
   let val = parseInt(input.value);
   if (isNaN(val) || val < 1) val = 1;
-  configState[pkgId].participants = val;
+  cs.participants = val;
   renderCatalog();
 }
 
 function confirmAddPackage(pkgId) {
   const pkg = PACKAGES.find(p => p.id === pkgId);
   if (!pkg) return;
-  const cs = configState[pkgId] || { splitIdx: 0, delivery: 'virtual', participants: 30 };
+  const cs = configState[pkgId] || { numSessions: 1, sessions: [{ hours: pkg.facilitationHours || 0, delivery: 'virtual' }], participants: 30 };
   const hasFacilitation = pkg.facilitationHours && pkg.facilitationHours > 0;
-  const splits = hasFacilitation ? getSessionSplits(pkg.facilitationHours) : [];
-  const split = splits[cs.splitIdx || 0] || { count: 1, duration: pkg.facilitationHours || 0 };
   const participants = cs.participants || 30;
   const facilitators = Math.max(1, Math.ceil(participants / 30));
+  const sessions = (cs.sessions || [{ hours: pkg.facilitationHours || 0, delivery: 'virtual' }]).map(s => ({ ...s }));
 
   let compId = 1;
   const components = pkg.components.map(c => ({ ...c, id: 'c' + compId++ }));
@@ -1138,11 +1229,9 @@ function confirmAddPackage(pkgId) {
     packageId: pkgId,
     participants,
     facilitators,
-    deliveryMode: cs.delivery || 'virtual',
-    sessionCount: split.count,
-    sessionDuration: split.duration,
+    sessions,
     launchMeetingQty: hasFacilitation ? 1 : 0,
-    officeHoursQty: hasFacilitation ? Math.max(0, split.count - 1) : 0,
+    officeHoursQty: hasFacilitation ? Math.max(0, sessions.length - 1) : 0,
     components
   };
   quotePackages.push(qpkg);
@@ -1179,6 +1268,24 @@ function setParticipants(pkgId, input) {
   if (isNaN(val) || val < 1) val = 1;
   qpkg.participants = val;
   qpkg.facilitators = Math.max(1, Math.ceil(val / 30));
+  renderQuote();
+  renderTotals();
+}
+
+function updateQuoteSessionHours(pkgId, idx, input) {
+  const qpkg = quotePackages.find(q => q.pkgId === pkgId);
+  if (!qpkg || !qpkg.sessions[idx]) return;
+  let val = parseFloat(input.value);
+  if (isNaN(val) || val < 0.5) val = 0.5;
+  qpkg.sessions[idx].hours = Math.round(val * 2) / 2;
+  renderQuote();
+  renderTotals();
+}
+
+function updateQuoteSessionDelivery(pkgId, idx, mode) {
+  const qpkg = quotePackages.find(q => q.pkgId === pkgId);
+  if (!qpkg || !qpkg.sessions[idx]) return;
+  qpkg.sessions[idx].delivery = mode;
   renderQuote();
   renderTotals();
 }
@@ -1395,6 +1502,12 @@ function renderQuote() {
   }
 }
 
+function getDeliveryBadgesForSessions(sessions) {
+  // Summarize delivery modes for header badge
+  const modes = [...new Set(sessions.map(s => s.delivery))];
+  return modes.map(m => `<span class="delivery-badge ${m}">${m}</span>`).join('');
+}
+
 function buildQuotePkg(qpkg) {
   const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
   const pathway = PATHWAYS.find(pw => pw.id === pkg?.pathway);
@@ -1403,18 +1516,37 @@ function buildQuotePkg(qpkg) {
   const isExpanded = expandedPkgId === qpkg.pkgId;
   const hasScalable = qpkg.components.some(c => c.scalable);
   const hasFacilitation = pkg && pkg.facilitationHours && pkg.facilitationHours > 0;
+  const sessions = qpkg.sessions || [];
 
   const div = document.createElement('div');
   div.className = 'qpkg' + (isExpanded ? ' expanded' : '');
 
   let bodyHtml = '';
 
-  // Delivery mode badge
-  const deliveryBadge = `<span class="delivery-badge ${qpkg.deliveryMode}">${qpkg.deliveryMode}</span>`;
+  // Delivery badges for header
+  const deliveryBadges = getDeliveryBadgesForSessions(sessions);
 
-  // Session info
-  if (hasFacilitation && qpkg.sessionCount && qpkg.sessionDuration) {
-    bodyHtml += `<div class="session-info">${qpkg.sessionCount} \u00D7 ${qpkg.sessionDuration}-hour session${qpkg.sessionCount > 1 ? 's' : ''} \u00B7 ${qpkg.deliveryMode}</div>`;
+  // Per-session rows with inline delivery pills and hours input
+  if (sessions.length > 0 && (hasFacilitation || sessions.some(s => s.delivery !== 'virtual'))) {
+    for (let i = 0; i < sessions.length; i++) {
+      const s = sessions[i];
+      const sessionTravelCost = s.delivery === 'local' ? getBlockPrice('travel-local') : s.delivery === 'travel' ? getBlockPrice('travel-flight') : 0;
+      const travelNote = sessionTravelCost > 0 ? `+${fmt(sessionTravelCost)}` : '';
+
+      bodyHtml += `<div class="builder-session-row">
+        <span class="builder-session-label">Session ${i + 1}:</span>
+        ${hasFacilitation ? `<input class="builder-session-hours" type="number" min="0.5" step="0.5" value="${s.hours}"
+               onchange="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this)"
+               oninput="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this)">
+        <span class="session-hours-unit">hrs</span>` : ''}
+        <div class="delivery-pills-sm">
+          <button class="delivery-pill-sm ${s.delivery === 'virtual' ? 'active' : ''}" onclick="updateQuoteSessionDelivery(${qpkg.pkgId},${i},'virtual')">Virtual</button>
+          <button class="delivery-pill-sm ${s.delivery === 'local' ? 'active' : ''}" onclick="updateQuoteSessionDelivery(${qpkg.pkgId},${i},'local')">Local</button>
+          <button class="delivery-pill-sm ${s.delivery === 'travel' ? 'active' : ''}" onclick="updateQuoteSessionDelivery(${qpkg.pkgId},${i},'travel')">Travel</button>
+        </div>
+        <span class="builder-session-info">${travelNote}</span>
+      </div>`;
+    }
   }
 
   if (hasScalable) {
@@ -1450,13 +1582,14 @@ function buildQuotePkg(qpkg) {
     </div>`;
   }
 
-  // Travel cost line
+  // Travel cost line (total across all sessions)
   const travelCost = calcTravelCost(qpkg);
   if (travelCost > 0) {
-    const travelLabel = qpkg.deliveryMode === 'local' ? 'Travel (Local)' : 'Travel (Flight)';
-    const travelUnit = qpkg.deliveryMode === 'local' ? fmt(getBlockPrice('travel-local')) : fmt(getBlockPrice('travel-flight'));
+    const travelSummary = sessions.filter(s => s.delivery !== 'virtual').map(s => {
+      return s.delivery === 'local' ? 'Local' : 'Travel';
+    }).join(', ');
     bodyHtml += `<div class="comp-line travel-line">
-      <div class="comp-info"><div class="comp-name">${travelLabel} <span style="font-size:9px;color:var(--slate-400)">${qpkg.sessionCount} session${qpkg.sessionCount > 1 ? 's' : ''} \u00D7 ${travelUnit}</span></div></div>
+      <div class="comp-info"><div class="comp-name">Travel <span style="font-size:9px;color:var(--slate-400)">${sessions.filter(s => s.delivery !== 'virtual').length} session${sessions.filter(s => s.delivery !== 'virtual').length > 1 ? 's' : ''} w/ travel</span></div></div>
       <div class="comp-total">${fmt(travelCost)}</div>
     </div>`;
   }
@@ -1504,7 +1637,7 @@ function buildQuotePkg(qpkg) {
 
   div.innerHTML = `<div class="qpkg-header" onclick="togglePkg(${qpkg.pkgId})">
       <span class="qpkg-chevron">\u25B6</span>
-      <span class="qpkg-name">${pkg ? pkg.name : 'Package'}${deliveryBadge}</span>
+      <span class="qpkg-name">${pkg ? pkg.name : 'Package'}${deliveryBadges}</span>
       <span class="qpkg-total">${fmt(net)}</span>
       <button class="qpkg-delete" onclick="event.stopPropagation(); removePkg(${qpkg.pkgId})" title="Remove">\u00D7</button>
     </div>
@@ -1653,9 +1786,7 @@ function saveToUrl() {
     packages: quotePackages.map(qp => ({
       packageId: qp.packageId,
       participants: qp.participants,
-      deliveryMode: qp.deliveryMode,
-      sessionCount: qp.sessionCount,
-      sessionDuration: qp.sessionDuration,
+      sessions: qp.sessions.map(s => ({ hours: s.hours, delivery: s.delivery })),
       launchMeetingQty: qp.launchMeetingQty,
       officeHoursQty: qp.officeHoursQty,
       components: qp.components.map(c => ({ id: c.id, qty: c.qty }))
@@ -1720,19 +1851,30 @@ function loadFromUrl() {
         }
         const participants = sp.participants || 30;
         const hasFac = pkg.facilitationHours && pkg.facilitationHours > 0;
-        const sessionCount = sp.sessionCount || (hasFac ? 1 : 1);
-        const sessionDuration = sp.sessionDuration || (hasFac ? pkg.facilitationHours : 0);
+
+        // Load sessions: new format (sessions array) or backward compat (deliveryMode + sessionCount)
+        let sessions;
+        if (sp.sessions && Array.isArray(sp.sessions)) {
+          sessions = sp.sessions.map(s => ({ hours: s.hours || 0, delivery: s.delivery || 'virtual' }));
+        } else {
+          // Backward compat from v3 old format
+          const sessionCount = sp.sessionCount || 1;
+          const sessionDuration = sp.sessionDuration || (hasFac ? pkg.facilitationHours : 0);
+          const delivery = sp.deliveryMode || 'virtual';
+          sessions = [];
+          for (let si = 0; si < sessionCount; si++) {
+            sessions.push({ hours: sessionDuration, delivery });
+          }
+        }
 
         const qpkg = {
           pkgId: nextPkgId++,
           packageId: sp.packageId,
           participants,
           facilitators: Math.max(1, Math.ceil(participants / 30)),
-          deliveryMode: sp.deliveryMode || 'virtual',
-          sessionCount,
-          sessionDuration,
+          sessions,
           launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : (hasFac ? 1 : 0),
-          officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessionCount - 1) : 0),
+          officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
           components
         };
         quotePackages.push(qpkg);
@@ -1804,10 +1946,16 @@ function copyForProposal() {
       const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
       const net = calcQuotePkgNet(qpkg);
       lines.push('');
-      const deliveryTag = qpkg.deliveryMode !== 'virtual' ? ` [${qpkg.deliveryMode}]` : '';
+      const sessions = qpkg.sessions || [];
+      const deliveryModes = [...new Set(sessions.map(s => s.delivery))];
+      const deliveryTag = deliveryModes.length === 1 && deliveryModes[0] !== 'virtual' ? ` [${deliveryModes[0]}]` : deliveryModes.length > 1 ? ` [mixed delivery]` : '';
       lines.push(pad(`  ${pkg ? pkg.name : 'Package'}${deliveryTag}`, fmt(net)));
-      if (qpkg.sessionCount && qpkg.sessionDuration) {
-        lines.push(`    ${qpkg.sessionCount} \u00D7 ${qpkg.sessionDuration}-hour session${qpkg.sessionCount > 1 ? 's' : ''}`);
+      if (sessions.length > 0) {
+        for (let si = 0; si < sessions.length; si++) {
+          const s = sessions[si];
+          const dTag = s.delivery !== 'virtual' ? ` (${s.delivery})` : '';
+          lines.push(`    Session ${si + 1}: ${s.hours} hrs${dTag}`);
+        }
       }
       for (const comp of qpkg.components) {
         const effQty = comp.scalable ? comp.qty * qpkg.facilitators : comp.qty;
@@ -1817,8 +1965,8 @@ function copyForProposal() {
       }
       const travelCost = calcTravelCost(qpkg);
       if (travelCost > 0) {
-        const travelLabel = qpkg.deliveryMode === 'local' ? 'Travel (Local)' : 'Travel (Flight)';
-        lines.push(`    \u2022 ${travelLabel} \u2014 ${fmt(travelCost)}`);
+        const nonVirtualCount = sessions.filter(s => s.delivery !== 'virtual').length;
+        lines.push(`    \u2022 Travel (${nonVirtualCount} session${nonVirtualCount > 1 ? 's' : ''}) \u2014 ${fmt(travelCost)}`);
       }
       if (qpkg.launchMeetingQty > 0) {
         lines.push(`    \u2022 Launch Meeting (${qpkg.launchMeetingQty}\u00D7) \u2014 ${fmt(qpkg.launchMeetingQty * getBlockPrice('admin-meetings'))}`);
@@ -1906,7 +2054,9 @@ function copyAsMarkdown() {
     const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
     const gross = calcQuotePkgGross(qpkg);
     const net = calcQuotePkgNet(qpkg);
-    const deliveryTag = qpkg.deliveryMode !== 'virtual' ? ` [${qpkg.deliveryMode}]` : '';
+    const sessions = qpkg.sessions || [];
+    const deliveryModes = [...new Set(sessions.map(s => s.delivery))];
+    const deliveryTag = deliveryModes.length === 1 && deliveryModes[0] !== 'virtual' ? ` [${deliveryModes[0]}]` : deliveryModes.length > 1 ? ` [mixed delivery]` : '';
     md += `| **${pkg ? pkg.name : 'Package'}${deliveryTag}** | ${fmt(gross)} | ${fmt(net)} |\n`;
   }
   for (const addon of quoteAddons) {
@@ -2012,7 +2162,9 @@ async function exportToGoogleDoc() {
       const gross = calcQuotePkgGross(qpkg);
       const net = calcQuotePkgNet(qpkg);
       let desc = pkg ? pkg.name : 'Package';
-      if (qpkg.deliveryMode !== 'virtual') desc += ` [${qpkg.deliveryMode}]`;
+      const sessModes = [...new Set((qpkg.sessions || []).map(s => s.delivery))];
+      if (sessModes.length === 1 && sessModes[0] !== 'virtual') desc += ` [${sessModes[0]}]`;
+      else if (sessModes.length > 1) desc += ` [mixed delivery]`;
       if (qpkg.facilitators > 1) desc += ` (${qpkg.facilitators} facilitators)`;
       const compDetails = qpkg.components.map(c => {
         const effQty = c.scalable ? c.qty * qpkg.facilitators : c.qty;
