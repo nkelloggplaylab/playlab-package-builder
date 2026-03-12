@@ -58,7 +58,7 @@
     .currency-select:focus { outline: none; border-color: var(--sky-500); }
 
     /* Layout */
-    .builder { display: grid; grid-template-columns: 1fr 440px; min-height: calc(100vh - 53px); }
+    .builder { display: grid; grid-template-columns: 1fr 540px; min-height: calc(100vh - 53px); }
 
     /* Left: Package Catalog */
     .catalog-col { padding: 20px 24px 48px; overflow-y: auto; border-right: 1px solid var(--slate-200); }
@@ -289,7 +289,7 @@
       .quote-col-inner { height: auto; overflow-y: visible; }
     }
     @media (min-width: 769px) and (max-width: 1100px) {
-      .builder { grid-template-columns: 1fr 380px; }
+      .builder { grid-template-columns: 1fr 460px; }
     }
   </style>
 </head>
@@ -327,7 +327,6 @@
   <!-- LEFT: Package Options -->
   <div class="catalog-col">
     <div class="section-title">Package Options</div>
-    <div id="catalogContainer"></div>
 
     <div class="pathway-section" id="softwareSection">
       <div class="pathway-header" onclick="document.getElementById('softwareSection').classList.toggle('collapsed')">
@@ -340,6 +339,8 @@
         <div class="sw-grid" id="swGrid"></div>
       </div>
     </div>
+
+    <div id="catalogContainer"></div>
 
     <div class="pathway-section collapsed" id="addonsSection">
       <div class="pathway-header" onclick="document.getElementById('addonsSection').classList.toggle('collapsed')">
