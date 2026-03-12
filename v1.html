@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlab — Package Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky-50: #f0f9ff; --sky-100: #e0f2fe; --sky-200: #bae6fd;
+      --sky-300: #7dd3fc; --sky-400: #38bdf8; --sky-500: #0EA5E9;
+      --sky-600: #0284c7; --sky-700: #0369a1;
+      --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+      --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a;
+      --emerald-50: #ecfdf5; --emerald-500: #10b981; --emerald-600: #059669;
+      --amber-50: #fffbeb; --amber-400: #fbbf24; --amber-500: #f59e0b;
+      --rose-500: #f43f5e;
+    }
+
+    body { font-family: 'Lexend', sans-serif; background: var(--slate-50); color: var(--slate-800); line-height: 1.5; min-height: 100vh; }
+
+    /* ── Auth Gate ── */
+    .auth-gate {
+      position: fixed; inset: 0; z-index: 9999; background: var(--slate-50);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    }
+    .auth-gate.hidden { display: none; }
+    .auth-logo { display: flex; gap: 2px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+    .auth-logo span:nth-child(1){color:#0EA5E9} .auth-logo span:nth-child(2){color:#f43f5e}
+    .auth-logo span:nth-child(3){color:#f59e0b} .auth-logo span:nth-child(4){color:#0EA5E9}
+    .auth-logo span:nth-child(5){color:#10b981} .auth-logo span:nth-child(6){color:#0EA5E9}
+    .auth-logo span:nth-child(7){color:#f43f5e}
+    .auth-subtitle { font-size: 14px; color: var(--slate-500); font-weight: 500; }
+    .auth-error { font-size: 12px; color: var(--rose-500); font-weight: 500; display: none; max-width: 300px; text-align: center; line-height: 1.5; }
+    .auth-error.show { display: block; }
+    #g_id_signin { margin-top: 8px; }
+
+    /* ── Header ── */
+    .app-header {
+      background: white; border-bottom: 1px solid var(--slate-200);
+      padding: 14px 28px; display: flex; align-items: center; gap: 14px;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .logo { display: flex; gap: 1px; font-size: 19px; font-weight: 700; letter-spacing: -0.3px; flex-shrink: 0; }
+    .logo span:nth-child(1){color:#0EA5E9} .logo span:nth-child(2){color:#f43f5e}
+    .logo span:nth-child(3){color:#f59e0b} .logo span:nth-child(4){color:#0EA5E9}
+    .logo span:nth-child(5){color:#10b981} .logo span:nth-child(6){color:#0EA5E9}
+    .logo span:nth-child(7){color:#f43f5e}
+    .header-sep { width: 1px; height: 18px; background: var(--slate-200); }
+    .header-title { font-size: 14px; font-weight: 600; color: var(--slate-600); }
+    .header-subtitle { font-size: 12px; color: var(--slate-400); flex: 1; text-align: right; }
+    .header-tabs { display: flex; gap: 2px; background: var(--slate-100); border-radius: 8px; padding: 2px; }
+    .header-tab { font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; padding: 5px 14px; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: var(--slate-500); transition: all 0.15s; white-space: nowrap; }
+    .header-tab.active { background: white; color: var(--slate-800); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .header-tab:hover:not(.active) { color: var(--slate-700); }
+
+    /* ── Layout ── */
+    .builder { display: grid; grid-template-columns: 1fr 420px; min-height: calc(100vh - 53px); }
+
+    /* ── Left: Blocks ── */
+    .blocks-col { padding: 20px 24px 48px; overflow-y: auto; border-right: 1px solid var(--slate-200); }
+    .blocks-col-header { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--slate-400); margin-bottom: 12px; }
+
+    /* ── Rates Panel ── */
+
+    /* ── Category + Block Cards ── */
+    .category-section { margin-bottom: 24px; }
+    .category-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--slate-200); }
+    .cat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .category-header h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--slate-700); }
+    .blocks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+
+    .block-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 11px; padding: 12px 14px 10px; display: flex; flex-direction: column; gap: 5px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .block-card:hover { border-color: var(--sky-300); box-shadow: 0 2px 8px rgba(14,165,233,.08); }
+    .block-card.in-quote { border-color: var(--sky-400); background: var(--sky-50); }
+    .block-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .block-name { font-size: 12px; font-weight: 600; color: var(--slate-800); line-height: 1.3; }
+    .block-price { font-size: 11px; font-weight: 700; color: var(--sky-700); background: var(--sky-100); padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .block-card.in-quote .block-price { background: var(--sky-200); }
+    .block-desc { font-size: 10.5px; color: var(--slate-500); line-height: 1.4; }
+    .block-note { font-size: 10px; color: #92400e; background: var(--amber-50); border: 1px solid #fde68a; padding: 3px 7px; border-radius: 5px; line-height: 1.4; }
+    .add-btn { margin-top: 3px; padding: 5px 0; width: 100%; background: var(--sky-500); color: white; border: none; border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .add-btn:hover { background: var(--sky-600); }
+    .add-btn.multi { background: var(--emerald-500); }
+    .add-btn.multi:hover { background: var(--emerald-600); }
+
+    /* ── Right: Quote ── */
+    .quote-col { background: white; position: sticky; top: 53px; height: calc(100vh - 53px); align-self: start; }
+    .quote-col-inner { height: 100%; overflow-y: scroll; padding: 20px 20px 28px; box-sizing: border-box; }
+    .quote-col-inner > * + * { margin-top: 14px; }
+    .q-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--slate-400); margin-bottom: 6px; }
+    .partner-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--slate-200); border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 500; color: var(--slate-800); transition: border-color 0.15s; }
+    .partner-input:focus { outline: none; border-color: var(--sky-500); }
+    .partner-input::placeholder { color: var(--slate-400); font-weight: 400; }
+
+    /* ── Package Contents header row ── */
+    .contents-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .add-bundle-btn { font-size: 10px; font-weight: 700; color: var(--sky-600); background: none; border: none; cursor: pointer; font-family: 'Lexend', sans-serif; padding: 3px 8px; border-radius: 20px; transition: background 0.15s; }
+    .add-bundle-btn:hover { background: var(--sky-50); }
+
+    /* ── Bundles list ── */
+    .bundles-wrap { display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; border: 2px dashed var(--slate-200); border-radius: 10px; color: var(--slate-400); font-size: 12px; text-align: center; gap: 6px; }
+    .empty-icon { font-size: 24px; opacity: 0.4; }
+
+    /* ── Bundle section ── */
+    .bundle-section { border: 1.5px solid var(--slate-200); border-radius: 10px; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+    .bundle-section.active { border-color: var(--sky-400); box-shadow: 0 0 0 3px rgba(14,165,233,.08); }
+
+    .bundle-header { display: flex; align-items: center; gap: 7px; padding: 8px 10px; background: var(--slate-50); cursor: pointer; border-bottom: 1px solid var(--slate-200); transition: background 0.15s; }
+    .bundle-section.active .bundle-header { background: var(--sky-50); border-bottom-color: var(--sky-100); }
+    .bundle-header:hover { background: var(--slate-100); }
+    .bundle-section.active .bundle-header:hover { background: #e0f2fe; }
+
+    .bundle-dot { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--slate-300); flex-shrink: 0; transition: all 0.15s; }
+    .bundle-section.active .bundle-dot { background: var(--sky-500); border-color: var(--sky-500); }
+
+    .bundle-name-input { flex: 1; border: none; background: transparent; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; color: var(--slate-800); padding: 0; min-width: 0; cursor: text; }
+    .bundle-name-input:focus { outline: none; }
+    .bundle-name-input::placeholder { color: var(--slate-400); font-weight: 400; }
+
+    .bundle-subtotal-badge { font-size: 11px; font-weight: 700; color: var(--slate-400); flex-shrink: 0; white-space: nowrap; }
+    .bundle-section.active .bundle-subtotal-badge { color: var(--sky-700); }
+
+    .bundle-delete { width: 18px; height: 18px; border: none; background: none; color: var(--slate-300); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; line-height: 1; border-radius: 3px; transition: all 0.1s; }
+    .bundle-delete:hover { color: var(--rose-500); background: #fff1f2; }
+
+    .bundle-body { padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+    .bundle-empty { font-size: 11px; color: var(--slate-400); text-align: center; padding: 10px 0; font-style: italic; }
+
+    /* ── Category label inside bundle ── */
+    .q-cat-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-top: 4px; margin-bottom: 2px; padding-left: 2px; }
+
+    /* ── Line item ── */
+    .line-item { background: var(--slate-50); border-radius: 8px; padding: 7px 9px; display: flex; align-items: center; gap: 6px; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: 11px; font-weight: 600; color: var(--slate-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+
+    /* ── Qty controls ── */
+    .qty-row { display: flex; align-items: center; gap: 3px; }
+    .qty-btn { width: 20px; height: 20px; border: 1.5px solid var(--slate-300); border-radius: 5px; background: white; color: var(--slate-600); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: all 0.1s; flex-shrink: 0; padding: 0; }
+    .qty-btn:hover:not(:disabled) { border-color: var(--sky-500); color: var(--sky-600); background: var(--sky-50); }
+    .qty-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .qty-input { width: 44px; text-align: center; padding: 3px 2px; border: 1.5px solid var(--slate-200); border-radius: 5px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700; color: var(--slate-800); background: white; -moz-appearance: textfield; }
+    .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .qty-input:focus { outline: none; border-color: var(--sky-500); }
+    .qty-unit { font-size: 10px; font-weight: 600; color: var(--slate-500); white-space: nowrap; }
+
+    .item-total { font-size: 12px; font-weight: 700; color: var(--slate-900); text-align: right; flex-shrink: 0; min-width: 48px; }
+    .remove-btn { width: 18px; height: 18px; border: none; background: none; color: var(--slate-300); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.1s; flex-shrink: 0; padding: 0; line-height: 1; }
+    .remove-btn:hover { color: var(--rose-500); background: #fff1f2; }
+
+    /* ── Smart Alert ── */
+    .smart-alert { background: var(--amber-50); border: 1.5px solid var(--amber-400); border-radius: 8px; padding: 8px 11px; font-size: 11px; color: #78350f; line-height: 1.4; display: none; }
+    .smart-alert.show { display: block; }
+
+    /* ── Totals ── */
+    .totals-section { border-top: 1.5px solid var(--slate-100); padding-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+    .t-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .t-label { color: var(--slate-500); font-weight: 500; }
+    .t-value { font-weight: 700; color: var(--slate-800); }
+    .discount-row { display: flex; align-items: center; gap: 7px; }
+    .disc-label { font-size: 12px; font-weight: 500; color: var(--slate-500); flex-shrink: 0; }
+    .disc-inputs { display: flex; gap: 4px; flex: 1; }
+    .disc-num { flex: 1; padding: 6px 9px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; color: var(--slate-800); min-width: 0; }
+    .disc-num:focus { outline: none; border-color: var(--sky-500); }
+    .disc-type { padding: 6px 8px; border: 1.5px solid var(--slate-200); border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
+    .disc-amt { font-size: 12px; font-weight: 700; color: var(--emerald-600); flex-shrink: 0; min-width: 48px; text-align: right; }
+    .total-final { background: var(--slate-900); padding: 11px 14px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .total-final .t-label { color: rgba(255,255,255,0.65); font-size: 12px; }
+    .total-final .t-value { color: white; font-size: 18px; font-weight: 800; }
+    .savings-note { text-align: center; font-size: 10.5px; color: var(--emerald-600); font-weight: 600; display: none; }
+    .savings-note.show { display: block; }
+
+    /* ── Actions ── */
+    .actions { display: flex; flex-direction: column; gap: 7px; }
+    .btn-copy { width: 100%; padding: 11px; background: var(--sky-500); color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-copy:hover { background: var(--sky-600); }
+    .btn-copy:active { transform: scale(0.98); }
+    .btn-copy.copied { background: var(--emerald-500); }
+    .btn-clear { width: 100%; padding: 8px; background: transparent; color: var(--slate-400); border: 1.5px solid var(--slate-200); border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .btn-clear:hover { color: var(--rose-500); border-color: var(--rose-500); background: #fff1f2; }
+    .footnote { font-size: 10px; color: var(--slate-400); line-height: 1.5; padding-top: 8px; border-top: 1px solid var(--slate-100); }
+
+    /* ── License Summary (right panel) ── */
+    .license-summary {
+      background: var(--sky-50); border: 1.5px solid var(--sky-200); border-radius: 9px;
+      padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .license-summary-dot { width: 8px; height: 8px; border-radius: 50%; background: #8b5cf6; flex-shrink: 0; }
+    .license-summary-info { flex: 1; min-width: 0; }
+    .license-summary-name { font-size: 11px; font-weight: 700; color: var(--slate-800); }
+    .license-summary-sub { font-size: 10px; color: var(--slate-500); margin-top: 1px; }
+    .license-summary-price { font-size: 12px; font-weight: 700; color: var(--sky-700); flex-shrink: 0; }
+
+    /* ── Examples Page ── */
+    .examples-page { display: none; padding: 24px 28px 48px; max-width: 1200px; margin: 0 auto; }
+    .examples-page.active { display: block; }
+    .builder.active { display: grid; }
+    .builder { display: none; }
+    .examples-intro { margin-bottom: 24px; }
+    .examples-intro h2 { font-size: 16px; font-weight: 700; color: var(--slate-800); margin-bottom: 6px; }
+    .examples-intro p { font-size: 12px; color: var(--slate-500); line-height: 1.5; }
+    .examples-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
+    .example-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 12px; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+    .example-card:hover { border-color: var(--sky-300); box-shadow: 0 4px 16px rgba(14,165,233,.08); }
+    .example-card-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--slate-100); }
+    .example-card-header h3 { font-size: 13px; font-weight: 700; color: var(--slate-800); margin-bottom: 2px; }
+    .example-card-header .example-subtitle { font-size: 10.5px; color: var(--slate-500); line-height: 1.4; }
+    .example-card-header .example-badge { display: inline-block; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 20px; margin-top: 6px; }
+    .example-card-body { padding: 12px 16px; }
+    .example-cat-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-top: 8px; margin-bottom: 4px; }
+    .example-cat-label:first-child { margin-top: 0; }
+    .example-line { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; gap: 8px; }
+    .example-line-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+    .example-line-name { font-size: 11px; font-weight: 500; color: var(--slate-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .example-line-price { font-size: 11px; font-weight: 700; color: var(--slate-800); flex-shrink: 0; min-width: 50px; text-align: right; }
+    .example-line-edit { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .example-qty-btn { width: 18px; height: 18px; border: 1px solid var(--slate-200); border-radius: 4px; background: white; color: var(--slate-500); font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; transition: all 0.1s; }
+    .example-qty-btn:hover { border-color: var(--sky-500); color: var(--sky-600); }
+    .example-qty-input { width: 32px; text-align: center; padding: 1px; border: 1px solid var(--slate-200); border-radius: 4px; font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 700; color: var(--slate-800); -moz-appearance: textfield; }
+    .example-qty-input::-webkit-inner-spin-button, .example-qty-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .example-qty-input:focus { outline: none; border-color: var(--sky-500); }
+    .example-card-footer { padding: 10px 16px 14px; border-top: 1px solid var(--slate-100); display: flex; flex-direction: column; gap: 8px; }
+    .example-totals { display: flex; flex-direction: column; gap: 4px; }
+    .example-total-row { display: flex; justify-content: space-between; align-items: center; }
+    .example-total-label { font-size: 11px; color: var(--slate-500); font-weight: 500; }
+    .example-total-value { font-size: 13px; font-weight: 700; color: var(--slate-800); }
+    .example-total-row.final { background: var(--slate-900); margin: 4px -16px 0; padding: 8px 16px; }
+    .example-total-row.final .example-total-label { color: rgba(255,255,255,.6); }
+    .example-total-row.final .example-total-value { color: white; font-size: 15px; font-weight: 800; }
+    .example-actions { display: flex; gap: 6px; }
+    .btn-load { flex: 1; padding: 8px; background: var(--sky-500); color: white; border: none; border-radius: 7px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-load:hover { background: var(--sky-600); }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--slate-900); color: white; padding: 9px 20px; border-radius: 40px; font-size: 13px; font-weight: 600; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1); z-index: 1000; white-space: nowrap; pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+
+    /* ── Per-unit cost & Multi-year ── */
+    .insights-section { border-top: 1.5px solid var(--slate-100); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .insight-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+    .insight-label { color: var(--slate-500); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    .insight-value { font-weight: 700; color: var(--sky-700); }
+    .insight-input { width: 72px; padding: 4px 7px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-800); text-align: right; -moz-appearance: textfield; }
+    .insight-input::-webkit-inner-spin-button, .insight-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .insight-input:focus { outline: none; border-color: var(--sky-500); }
+    .multiyear-toggle { font-size: 10px; font-weight: 700; color: var(--sky-600); background: none; border: none; cursor: pointer; font-family: 'Lexend', sans-serif; padding: 3px 8px; border-radius: 20px; transition: background 0.15s; }
+    .multiyear-toggle:hover { background: var(--sky-50); }
+    .multiyear-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    .multiyear-table th, .multiyear-table td { padding: 5px 8px; font-size: 10.5px; text-align: right; border-bottom: 1px solid var(--slate-100); }
+    .multiyear-table th { font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.5px; font-size: 9.5px; text-align: right; }
+    .multiyear-table th:first-child, .multiyear-table td:first-child { text-align: left; }
+    .multiyear-table td { color: var(--slate-700); font-weight: 500; }
+    .multiyear-table td.highlight { font-weight: 700; color: var(--slate-900); }
+    .multiyear-wrap { display: none; }
+    .multiyear-wrap.show { display: block; }
+
+    /* ── Copy format selector ── */
+    .copy-row { display: flex; gap: 6px; }
+    .copy-row .btn-copy { flex: 1; }
+    .btn-copy-md { padding: 11px 14px; background: var(--slate-700); color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+    .btn-copy-md:hover { background: var(--slate-800); }
+    .btn-copy-md.copied { background: var(--emerald-500); }
+    .btn-export { width: 100%; padding: 11px; background: #4285f4; color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-export:hover { background: #3367d6; }
+    .btn-export:disabled { opacity: 0.6; cursor: wait; }
+    .btn-export svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ── Software License Section ── */
+    .software-section { margin-bottom: 24px; }
+    .software-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--slate-200); }
+    .software-section-header h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--slate-700); }
+    .software-section-sub { font-size: 10.5px; color: var(--slate-400); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: auto; }
+    .tier-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+
+    .tier-card {
+      background: white; border: 1.5px solid var(--slate-200); border-radius: 11px;
+      padding: 12px 14px 11px; display: flex; flex-direction: column; gap: 4px;
+      cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .tier-card:hover { border-color: var(--sky-300); box-shadow: 0 2px 8px rgba(14,165,233,.08); }
+    .tier-card.tier-selected {
+      border-color: var(--sky-500); background: var(--sky-50);
+      box-shadow: 0 0 0 3px rgba(14,165,233,.12);
+    }
+    .tier-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .tier-name { font-size: 13px; font-weight: 700; color: var(--slate-800); }
+    .tier-radio {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--slate-300);
+      flex-shrink: 0; transition: all 0.15s; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tier-card.tier-selected .tier-radio { border-color: var(--sky-500); background: var(--sky-500); }
+    .tier-card.tier-selected .tier-radio::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: white;
+    }
+    .tier-tagline { font-size: 10.5px; color: var(--slate-500); line-height: 1.35; }
+    .tier-price { font-size: 11px; font-weight: 700; color: var(--sky-700); background: var(--sky-100); padding: 2px 7px; border-radius: 20px; align-self: flex-start; margin-top: 2px; white-space: nowrap; }
+    .tier-card.tier-selected .tier-price { background: var(--sky-200); }
+    .tier-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; }
+    .tier-meta-row { font-size: 10px; color: var(--slate-500); line-height: 1.3; }
+    .tier-meta-row strong { font-weight: 600; color: var(--slate-600); }
+    .tier-count { margin-top: 7px; display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--slate-100); }
+    .tier-card.tier-selected .tier-count { border-top-color: var(--sky-200); }
+    .tier-count-label { font-size: 10px; color: var(--slate-500); font-weight: 600; flex: 1; }
+    .tier-count-input { width: 72px; padding: 3px 7px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 700; color: var(--slate-800); background: white; -moz-appearance: textfield; text-align: right; }
+    .tier-count-input::-webkit-inner-spin-button, .tier-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .tier-count-input:focus { outline: none; border-color: var(--sky-500); }
+    .tier-card.tier-selected .tier-count-input { border-color: var(--sky-300); background: white; }
+    .tier-count-computed { font-size: 10px; font-weight: 700; color: var(--emerald-600); white-space: nowrap; }
+
+    /* ── Currency Toggle ── */
+    .currency-toggle { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .currency-toggle label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
+    .currency-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
+    .currency-select:focus { outline: none; border-color: var(--sky-500); }
+
+    /* ── Line-item discount ── */
+    .item-discount-row { display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+    .item-disc-btn { font-size: 9px; font-weight: 600; color: var(--slate-400); background: none; border: none; cursor: pointer; font-family: 'Lexend', sans-serif; padding: 1px 4px; border-radius: 4px; transition: all 0.1s; }
+    .item-disc-btn:hover { color: var(--emerald-600); background: var(--emerald-50); }
+    .item-disc-btn.active { color: var(--emerald-600); }
+    .item-disc-inputs { display: flex; align-items: center; gap: 2px; }
+    .item-disc-input { width: 44px; padding: 2px 4px; border: 1px solid var(--slate-200); border-radius: 4px; font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 600; color: var(--slate-800); text-align: right; -moz-appearance: textfield; }
+    .item-disc-input::-webkit-inner-spin-button, .item-disc-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .item-disc-input:focus { outline: none; border-color: var(--sky-500); }
+    .item-disc-type { padding: 2px 4px; border: 1px solid var(--slate-200); border-radius: 4px; font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 600; color: var(--slate-600); background: white; cursor: pointer; }
+    .item-disc-tag { font-size: 9px; font-weight: 700; color: var(--emerald-600); white-space: nowrap; }
+
+    @media (max-width: 768px) {
+      .builder { grid-template-columns: 1fr; }
+      .quote-col { position: static; height: auto; align-self: auto; }
+      .quote-col-inner { height: auto; overflow-y: visible; }
+      .header-subtitle { display: none; }
+    }
+    @media (min-width: 769px) and (max-width: 1100px) {
+      .builder { grid-template-columns: 1fr 360px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-gate hidden" id="authGate">
+  <div class="auth-logo"><span>P</span><span>l</span><span>a</span><span>y</span><span>l</span><span>a</span><span>b</span></div>
+  <div class="auth-subtitle">Package Builder</div>
+  <div id="g_id_signin"></div>
+  <div class="auth-error" id="authError">Access is restricted to @playlab.ai accounts. Please sign in with your Playlab Google account.</div>
+</div>
+
+<header class="app-header">
+  <div class="logo"><span>P</span><span>l</span><span>a</span><span>y</span><span>l</span><span>a</span><span>b</span></div>
+  <div class="header-sep"></div>
+  <div class="header-title">Package Builder</div>
+  <div class="header-tabs">
+    <button class="header-tab active" data-tab="builder">Builder</button>
+    <button class="header-tab" data-tab="examples">Learning Tracks</button>
+  </div>
+  <div class="currency-toggle">
+    <label>Currency</label>
+    <select class="currency-select" id="currencySelect">
+      <option value="USD">USD ($)</option>
+      <option value="EUR">EUR (&euro;)</option>
+      <option value="GBP">GBP (&pound;)</option>
+      <option value="CHF">CHF (Fr)</option>
+      <option value="SEK">SEK (kr)</option>
+      <option value="NOK">NOK (kr)</option>
+      <option value="DKK">DKK (kr)</option>
+      <option value="GHS">GHS (GH&#x20B5;)</option>
+      <option value="INR">INR (&#x20B9;)</option>
+    </select>
+  </div>
+  <div class="header-subtitle">Build custom partner quotes from service building blocks</div>
+</header>
+
+<div class="builder active">
+
+  <!-- ── LEFT: Building Blocks ── -->
+  <div class="blocks-col">
+    <div class="blocks-col-header">Service Building Blocks</div>
+
+
+    <div class="software-section">
+      <div class="software-section-header">
+        <div class="cat-dot" style="background:#8b5cf6"></div>
+        <h3>Software License</h3>
+        <span class="software-section-sub">Select one tier — included in package total</span>
+      </div>
+      <div class="tier-grid" id="tierGrid"></div>
+    </div>
+
+
+    <div id="blocksContainer"></div>
+  </div>
+
+  <!-- ── RIGHT: Quote Panel ── -->
+  <div class="quote-col">
+  <div class="quote-col-inner">
+
+    <div>
+      <div class="q-label">Partner / Organization</div>
+      <input class="partner-input" id="partnerName" type="text" placeholder="e.g. Nampa School District">
+    </div>
+
+    <div id="licenseSummaryWrap"></div>
+
+    <div style="display:flex; flex-direction:column; gap:0; min-height:0;">
+      <div class="contents-header">
+        <div class="q-label" style="margin-bottom:0">Package Contents</div>
+        <button class="add-bundle-btn" id="addBundleBtn">+ New Bundle</button>
+      </div>
+      <div class="bundles-wrap" id="bundlesWrap"></div>
+    </div>
+
+    <div class="smart-alert" id="comboAlert">
+      💡 <strong>Combo tip:</strong> Tool Build + Tool Pilot together = $10K (initial) or $8K (additional) — vs. $11.5K/$9K when priced separately.
+    </div>
+
+    <div class="totals-section">
+      <div class="t-row">
+        <span class="t-label">Standard Total</span>
+        <span class="t-value" id="standardTotal">—</span>
+      </div>
+      <div class="discount-row">
+        <span class="disc-label">Discount</span>
+        <div class="disc-inputs">
+          <input class="disc-num" id="discountVal" type="number" min="0" placeholder="0">
+          <select class="disc-type" id="discountType">
+            <option value="pct">%</option>
+            <option value="flat" id="discFlatLabel">$</option>
+          </select>
+        </div>
+        <span class="disc-amt" id="discountDisplay"></span>
+      </div>
+      <div class="total-final">
+        <span class="t-label">Partner Price</span>
+        <span class="t-value" id="partnerPrice">—</span>
+      </div>
+      <div class="savings-note" id="savingsNote"></div>
+    </div>
+
+    <div class="insights-section" id="insightsSection" style="display:none">
+      <div class="insight-row">
+        <span class="insight-label">Students served
+          <input class="insight-input" id="studentCount" type="number" min="0" placeholder="0">
+        </span>
+        <span class="insight-value" id="perStudentCost">—</span>
+      </div>
+      <div class="insight-row">
+        <span class="insight-label">Educators served
+          <input class="insight-input" id="educatorCount" type="number" min="0" placeholder="0">
+        </span>
+        <span class="insight-value" id="perEducatorCost">—</span>
+      </div>
+      <div class="insight-row" style="margin-top:4px">
+        <span class="insight-label">Investment projection</span>
+        <button class="multiyear-toggle" id="multiyearToggle">Show 3-year view</button>
+      </div>
+      <div class="multiyear-wrap" id="multiyearWrap">
+        <table class="multiyear-table">
+          <thead><tr><th></th><th>Year 1</th><th>Year 2</th><th>Year 3</th><th>3-Yr Total</th></tr></thead>
+          <tbody id="multiyearBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-export" id="exportDocBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Export to Google Doc
+      </button>
+      <div class="copy-row">
+        <button class="btn-copy" id="copyBtn">Copy for Proposal</button>
+        <button class="btn-copy-md" id="copyMdBtn" title="Copy as Markdown">MD</button>
+      </div>
+      <button class="btn-clear" id="clearBtn">Clear All</button>
+    </div>
+
+    <p class="footnote">* AI model usage costs are covered by Playlab and not passed on to partners.</p>
+  </div>
+  </div>
+</div>
+
+<div class="examples-page" id="examplesPage">
+  <div class="examples-intro">
+    <h2>Example Packages</h2>
+    <p>Complete proposal examples showing how building blocks combine into real partnership packages. Edit quantities directly, then load into the Builder to customize further.</p>
+  </div>
+  <div class="examples-grid" id="examplesGrid"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Auth Gate ────────────────────────────────────────────────────────────────
+const ALLOWED_DOMAIN = 'playlab.ai';
+const AUTH_SESSION_KEY = 'playlab_auth_user';
+
+function decodeJwtPayload(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(base64));
+}
+
+function handleAuthResponse(response) {
+  const payload = decodeJwtPayload(response.credential);
+  const email = (payload.email || '').toLowerCase();
+  const domain = email.split('@')[1];
+  if (domain === ALLOWED_DOMAIN) {
+    sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ email, name: payload.name, picture: payload.picture, exp: payload.exp }));
+    unlockApp();
+  } else {
+    document.getElementById('authError').classList.add('show');
+  }
+}
+
+function unlockApp() {
+  document.getElementById('authGate').classList.add('hidden');
+}
+
+function checkExistingAuth() {
+  const stored = sessionStorage.getItem(AUTH_SESSION_KEY);
+  if (!stored) return false;
+  try {
+    const data = JSON.parse(stored);
+    if (data.exp && data.exp * 1000 > Date.now()) { unlockApp(); return true; }
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+  } catch { sessionStorage.removeItem(AUTH_SESSION_KEY); }
+  return false;
+}
+
+// Initialize Google Sign-In for auth gate
+function initAuthGate() {
+  if (checkExistingAuth()) return;
+  if (typeof google === 'undefined' || !google.accounts) {
+    setTimeout(initAuthGate, 100);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: '250408974404-nvnm9m62vc2g8gsn0u0k1t8gt0h0caa2',
+    callback: handleAuthResponse,
+    auto_select: true,
+    hosted_domain: ALLOWED_DOMAIN
+  });
+  google.accounts.id.renderButton(document.getElementById('g_id_signin'), {
+    theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular'
+  });
+}
+// initAuthGate(); // TODO: re-enable once GCP OAuth is configured
+
+// ─── Currency ──────────────────────────────────────────────────────────────────
+const CURRENCIES = {
+  USD: { symbol: '$', prefix: true, rate: 1 },
+  EUR: { symbol: '\u20AC', prefix: true, rate: 0.92 },
+  GBP: { symbol: '\u00A3', prefix: true, rate: 0.79 },
+  CHF: { symbol: 'Fr\u00A0', prefix: true, rate: 0.88 },
+  SEK: { symbol: '\u00A0kr', prefix: false, rate: 10.5 },
+  NOK: { symbol: '\u00A0kr', prefix: false, rate: 10.8 },
+  DKK: { symbol: '\u00A0kr', prefix: false, rate: 6.85 },
+  GHS: { symbol: 'GH\u20B5', prefix: true, rate: 10.8 },
+  INR: { symbol: '\u20B9', prefix: true, rate: 91.83 }
+};
+let selectedCurrency = 'USD';
+let ratesLastUpdated = null;
+function getCurrency() { return CURRENCIES[selectedCurrency] || CURRENCIES.USD; }
+function convertAmount(usdAmount) { return Math.round(usdAmount * getCurrency().rate); }
+
+// Fetch live rates from ECB via Frankfurter API (updates daily on business days)
+function fetchLiveRates() {
+  const cacheKey = 'playlab_fx_rates';
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      const data = JSON.parse(cached);
+      const cacheAge = Date.now() - data.fetchedAt;
+      if (cacheAge < 24 * 60 * 60 * 1000) {
+        applyLiveRates(data.rates, data.date);
+        return;
+      }
+    } catch (e) { /* ignore bad cache */ }
+  }
+  fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,CHF,SEK,NOK,DKK,INR')
+    .then(r => r.json())
+    .then(data => {
+      if (data.rates) {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ rates: data.rates, date: data.date, fetchedAt: Date.now() }));
+        applyLiveRates(data.rates, data.date);
+      }
+    })
+    .catch(() => { /* keep fallback rates */ });
+
+  // GHS not in ECB — fetch from open.er-api.com (free, no key)
+  const ghsCacheKey = 'playlab_fx_ghs';
+  const ghsCached = sessionStorage.getItem(ghsCacheKey);
+  if (ghsCached) {
+    try {
+      const d = JSON.parse(ghsCached);
+      if (Date.now() - d.fetchedAt < 24 * 60 * 60 * 1000 && d.rate) {
+        CURRENCIES.GHS.rate = d.rate;
+        return;
+      }
+    } catch (e) { /* ignore */ }
+  }
+  fetch('https://open.er-api.com/v6/latest/USD')
+    .then(r => r.json())
+    .then(data => {
+      if (data.rates && data.rates.GHS) {
+        CURRENCIES.GHS.rate = data.rates.GHS;
+        sessionStorage.setItem(ghsCacheKey, JSON.stringify({ rate: data.rates.GHS, fetchedAt: Date.now() }));
+        if (selectedCurrency === 'GHS') {
+          renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+        }
+      }
+    })
+    .catch(() => { /* keep fallback rate */ });
+}
+
+function applyLiveRates(rates, date) {
+  const keys = ['EUR', 'GBP', 'CHF', 'SEK', 'NOK', 'DKK', 'INR'];
+  for (const k of keys) { if (rates[k]) CURRENCIES[k].rate = rates[k]; }
+  ratesLastUpdated = date;
+  // Re-render if a non-USD currency is active
+  if (selectedCurrency !== 'USD') {
+    renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+  }
+  // Update tooltip on currency select
+  const sel = document.getElementById('currencySelect');
+  if (sel) sel.title = 'ECB rates as of ' + date;
+}
+
+// ─── Rates ───────────────────────────────────────────────────────────────────
+const DEFAULT_RATES = { lp: 250, dev: 200, travel: 125 };
+let rates = { ...DEFAULT_RATES };
+
+function roundPrice(n) {
+  if (n >= 10000) return Math.round(n / 1000) * 1000;
+  if (n >= 1000)  return Math.round(n / 100) * 100;
+  if (n >= 500)   return Math.round(n / 50) * 50;
+  return Math.round(n / 25) * 25;
+}
+
+function getBlockPrice(blockId) {
+  const { lp, dev, travel: tr } = rates;
+  switch (blockId) {
+    case 'office-hours':      return roundPrice(lp * 1.0 * 1.2);
+    case 'coaching':          return roundPrice(lp * 1.5 * 1.2);
+    case 'admin-meetings':    return roundPrice(lp * 1.5 * 1.2);
+    case 'facilitation':      return roundPrice(lp * 2.0 * 1.2);
+    case 'dev-hourly':        return roundPrice(dev * 1.0);
+    case 'app-support-light': return roundPrice(dev * 5.0);
+    case 'app-support-medium':return roundPrice(dev * 10.0);
+    case 'app-support-full':  return roundPrice(dev * 20.0);
+    case 'travel-local':      return roundPrice((tr + 99.5)   * 1.15 * 0.98);
+    case 'travel-flight':     return roundPrice((tr * 8 + 600) * 1.25);
+    case 'travel-addl-day':   return roundPrice((tr + 375)    * 1.15 * 1.04);
+    case 'site-visit-half':   return roundPrice((lp * 3 + tr + lp * 2) * 1.09);
+    case 'site-visit-full':   return roundPrice((lp * 6 + tr + lp * 2) * 1.16);
+    case 'ai-crash-course':   return roundPrice(lp * 8 * 1.15);
+    case 'ideation-lp':       return roundPrice(lp * 10);
+    case 'ideation-lp-le':    return roundPrice(lp * 14 * 1.15);
+    case 'tool-build-initial':return roundPrice((lp + dev) * 10 * 1.1);
+    case 'tool-build-addl':   return roundPrice(lp * 2 + dev * 10);
+    case 'tool-pilot':        return roundPrice((lp * 16 + dev * 8) * 1.16);
+    case 'tool-revision-light': return roundPrice(dev * 6 * 1.25);
+    case 'tool-revision-medium':return roundPrice(dev * 14);
+    case 'tool-revision-full':  return roundPrice(dev * 22 * 1.15 * 0.99);
+    default: return 0;
+  }
+}
+
+// ─── Software Tiers ───────────────────────────────────────────────────────────
+const SOFTWARE_TIERS = [
+  {
+    id: 'free',
+    name: 'Free',
+    tagline: 'For individuals to play and explore',
+    priceLabel: 'Free, always',
+    annualCost: 0,
+    educators: '1 educator',
+    students: '—'
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    tagline: 'For individuals to implement widely',
+    priceLabel: '$100/year or $10/month',
+    annualCost: 100,
+    educators: '1 educator',
+    students: '150 students'
+  },
+  {
+    id: 'play',
+    name: 'Play',
+    tagline: '6 month trial for any organization',
+    priceLabel: '$1,500/6-mo per org',
+    annualCost: 1500,
+    educators: '100 educators',
+    students: '1,000 students'
+  },
+  {
+    id: 'impact',
+    name: 'Impact',
+    tagline: 'For non-school organizations',
+    priceLabel: '$200/user/year',
+    annualCost: null,
+    educators: '\u2014',
+    students: '150 students/user'
+  },
+  {
+    id: 'impact-schools',
+    name: 'Impact (Schools)',
+    tagline: 'For schools and universities',
+    priceLabel: '$3/year per student',
+    annualCost: null,
+    educators: 'All educators',
+    students: 'All students'
+  }
+];
+
+let selectedTierId = 'free';
+let tierCounts = { impact: 5, impactSchools: 1000 };
+
+function getSelectedTier() {
+  return SOFTWARE_TIERS.find(t => t.id === selectedTierId) || SOFTWARE_TIERS[0];
+}
+
+function selectTier(tierId) {
+  const changed = selectedTierId !== tierId;
+  selectedTierId = tierId;
+  if (changed) renderTierCards();
+  renderLicenseSummary();
+  renderTotals();
+}
+
+function updateTierCount(tierId, input, clamp) {
+  let val = parseInt(input.value);
+  if (tierId === 'impact') {
+    if (clamp && (isNaN(val) || val < 1)) val = 1;
+    if (!isNaN(val) && val >= 1) tierCounts.impact = val;
+  } else if (tierId === 'impact-schools') {
+    if (clamp && (isNaN(val) || val < 1000)) val = 1000;
+    if (!isNaN(val) && val >= 1) tierCounts.impactSchools = val;
+  }
+  if (clamp) input.value = tierCounts[tierId];
+  // Update computed price inline without rebuilding DOM
+  const computedEl = input.closest('.tier-count')?.querySelector('.tier-count-computed');
+  if (computedEl) {
+    if (tierId === 'impact') computedEl.textContent = fmt(tierCounts.impact * 200) + '/yr';
+    else if (tierId === 'impact-schools') computedEl.textContent = fmt(tierCounts.impactSchools * 3) + '/yr';
+  }
+  renderLicenseSummary();
+  renderTotals();
+}
+
+function renderTierCards() {
+  const grid = document.getElementById('tierGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (const tier of SOFTWARE_TIERS) {
+    const isSelected = tier.id === selectedTierId;
+    const card = document.createElement('div');
+    card.className = 'tier-card' + (isSelected ? ' tier-selected' : '');
+    card.onclick = () => selectTier(tier.id);
+
+    let countInput = '';
+    if (tier.id === 'impact') {
+      const computed = fmt(tierCounts.impact * 200);
+      countInput = `
+      <div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">User seats</span>
+        <input class="tier-count-input" type="number" min="1" value="${tierCounts.impact}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact') selectTier('impact')"
+               oninput="updateTierCount('impact', this, false)"
+               onchange="updateTierCount('impact', this, true)">
+        <span class="tier-count-computed">${computed}/yr</span>
+      </div>`;
+    } else if (tier.id === 'impact-schools') {
+      const computed = fmt(tierCounts.impactSchools * 3);
+      countInput = `
+      <div class="tier-count" onclick="event.stopPropagation()">
+        <span class="tier-count-label">Student licenses</span>
+        <input class="tier-count-input" type="number" min="1000" step="100" value="${tierCounts.impactSchools}"
+               onclick="event.stopPropagation(); if(selectedTierId!=='impact-schools') selectTier('impact-schools')"
+               oninput="updateTierCount('impact-schools', this, false)"
+               onchange="updateTierCount('impact-schools', this, true)">
+        <span class="tier-count-computed">${computed}/yr</span>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="tier-card-top">
+        <div class="tier-name">${tier.name}</div>
+        <div class="tier-radio"></div>
+      </div>
+      <div class="tier-tagline">${tier.tagline}</div>
+      <div class="tier-price">${tier.priceLabel}</div>
+      <div class="tier-meta">
+        <div class="tier-meta-row"><strong>Educators:</strong> ${tier.educators}</div>
+        <div class="tier-meta-row"><strong>Students:</strong> ${tier.students}</div>
+      </div>${countInput}`;
+    grid.appendChild(card);
+  }
+}
+
+function renderLicenseSummary() {
+  const wrap = document.getElementById('licenseSummaryWrap');
+  if (!wrap) return;
+  const tier = getSelectedTier();
+  const cost = calcTierCost();
+  let priceStr;
+  if (tier.id === 'free') priceStr = 'Included (Free)';
+  else if (tier.id === 'impact') priceStr = `${fmt(cost)}/yr · ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') priceStr = `${fmt(cost)}/yr · ${tierCounts.impactSchools.toLocaleString()} students`;
+  else priceStr = fmt(cost) + '/yr';
+  wrap.innerHTML = `
+    <div>
+      <div class="q-label">Software License</div>
+      <div class="license-summary">
+        <div class="license-summary-dot"></div>
+        <div class="license-summary-info">
+          <div class="license-summary-name">Playlab ${tier.name}</div>
+          <div class="license-summary-sub">${tier.educators} · ${tier.students}</div>
+        </div>
+        <div class="license-summary-price">${priceStr}</div>
+      </div>
+    </div>`;
+}
+
+// ─── Block Data ───────────────────────────────────────────────────────────────
+const CATEGORIES = [
+  { id: 'lp',     label: 'Learning Partner', color: '#0EA5E9', blocks: [
+    { id: 'office-hours',   name: 'Office Hours',   unit: 'hr',    minQty: 0.5, step: 0.5, defaultQty: 1,   desc: 'Starting at 30 min', partnerDesc: 'Drop-in support for questions, troubleshooting, and guidance', note: '' },
+    { id: 'coaching',       name: 'Coaching',       unit: 'hr',    minQty: 0.5, step: 0.5, defaultQty: 1,   desc: 'Starting at 30 min · Prep + follow-up included', partnerDesc: '1-on-1 implementation coaching for educators deploying AI tools', note: 'Typically 25% of PD time (e.g., 8 hrs PD → 2 hrs coaching)' },
+    { id: 'admin-meetings', name: 'Admin Meetings', unit: 'hr',    minQty: 0.5, step: 0.5, defaultQty: 1,   desc: 'Starting at 30 min · Prep + follow-up included', partnerDesc: 'Strategic planning and check-ins with leadership', note: '' },
+    { id: 'facilitation',   name: 'Facilitation',   unit: 'hr',    minQty: 1.5, step: 0.5, defaultQty: 4,   desc: 'Starting at 1.5 hrs · Up to 50 participants', partnerDesc: 'Hands-on professional learning — educators build AI tools with expert guidance', note: '' }
+  ]},
+  { id: 'dev',    label: 'Developer',        color: '#8b5cf6', blocks: [
+    { id: 'dev-hourly',         name: 'Dev Hourly Rate',       unit: 'hr', minQty: 0.5, step: 0.5, defaultQty: 1, desc: 'Minimum 30 min', partnerDesc: 'Engineering support for custom builds and integrations', note: '' },
+    { id: 'app-support-light',  name: 'App Support — Light',  unit: 'mo', minQty: 1,   step: 1,   defaultQty: 1, desc: '~5 hrs/month of ongoing support', partnerDesc: 'Ongoing technical support and app maintenance', note: '' },
+    { id: 'app-support-medium', name: 'App Support — Medium', unit: 'mo', minQty: 1,   step: 1,   defaultQty: 1, desc: '~10 hrs/month of ongoing support', partnerDesc: 'Dedicated app support with regular iteration cycles', note: '' },
+    { id: 'app-support-full',   name: 'App Support — Full',   unit: 'mo', minQty: 1,   step: 1,   defaultQty: 1, desc: '~20 hrs/month of ongoing support', partnerDesc: 'Comprehensive engineering partnership with continuous development', note: '' }
+  ]},
+  { id: 'travel', label: 'Travel',           color: '#f97316', blocks: [
+    { id: 'travel-local',    name: 'Travel — Local',          unit: 'day',   minQty: 1, step: 1, defaultQty: 1, desc: 'Day min · ~35 mi ($25) + $75/day per diem + 15% overhead', partnerDesc: 'Local travel for on-site facilitation and support', note: 'Add hotel (~$200/night) and additional per diem as needed' },
+    { id: 'travel-flight',   name: 'Travel — Flight',         unit: 'trip',  minQty: 1, step: 1, defaultQty: 1, desc: 'Trip min · 8 hrs travel + flight + ground + per diem', partnerDesc: 'Flight travel for on-site engagement', note: '50% fee if cancelled within 14 days; 100% within 7' },
+    { id: 'travel-addl-day', name: 'Travel — Additional Day', unit: 'day',   minQty: 1, step: 1, defaultQty: 1, desc: 'Hotel + ground ($100/day) + per diem ($75/day)', partnerDesc: 'Extended on-site presence for multi-day engagements', note: 'Adjust based on hotel actual cost' },
+    { id: 'site-visit-half', name: 'Site Visit — Half Day',   unit: 'visit', minQty: 1, step: 1, defaultQty: 1, desc: '1–4 hour visit · Visit time + travel + prep/follow-up', partnerDesc: 'On-site observation, coaching, and debrief (1–4 hours)', note: '' },
+    { id: 'site-visit-full', name: 'Site Visit — Full Day',   unit: 'visit', minQty: 1, step: 1, defaultQty: 1, desc: '4–8 hour visit · Visit time + travel + prep/follow-up', partnerDesc: 'Full-day on-site facilitation, observation, and coaching', note: '' }
+  ]},
+  { id: 'ai',     label: 'Targeted AI',      color: '#10b981', blocks: [
+    { id: 'ai-crash-course',     name: 'AI Agency Crash Course',  unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '4 hrs facilitation + 4 hrs prep + 15% overhead', partnerDesc: '4-hour workshop: educators explore AI and build their first custom AI tool', note: '' },
+    { id: 'ideation-lp',         name: 'Ideation — w/ LP only',   unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '6 hrs facilitation + 2 hrs prep + 15% overhead', partnerDesc: 'Facilitated session to surface high-impact AI use cases aligned to your priorities', note: 'Surface use cases and evaluate their fit for AI solutions' },
+    { id: 'ideation-lp-le',      name: 'Ideation — w/ LP & LE',   unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '6 hrs LP + 6 hrs LE + 2 hrs prep + 15% overhead', partnerDesc: 'Strategic ideation with both learning and engineering expertise to assess technical feasibility', note: 'Recommended when technical builds are likely' },
+    { id: 'tool-build-initial',  name: 'Tool Build — Initial',     unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '10 hrs LP + 10 hrs dev + 15% overhead', partnerDesc: 'Custom AI tool: requirements discovery, development, testing & iteration', note: 'Requirements → Build → Testing & Iteration' },
+    { id: 'tool-build-addl',     name: 'Tool Build — Additional',  unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '5 hrs LP + 5 hrs dev + 15% overhead', partnerDesc: 'Additional custom AI tool build (streamlined after initial)', note: '' },
+    { id: 'tool-pilot',          name: 'Tool Pilot',               unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '16 hrs facilitation + 8 hrs dev + 15% overhead', partnerDesc: 'Structured pilot: deploy tool with users, gather feedback, iterate, and measure impact', note: 'Combo w/ Tool Build: $10K initial or $8K additional (vs. $11K/$8.5K separately)' },
+    { id: 'tool-revision-light', name: 'Tool Revision — Light',    unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '~7 hrs dev + 15% overhead', partnerDesc: 'Minor updates and refinements to an existing AI tool', note: '' },
+    { id: 'tool-revision-medium',name: 'Tool Revision — Medium',   unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '~14 hrs dev + 15% overhead', partnerDesc: 'Significant feature additions or workflow changes to an existing tool', note: '' },
+    { id: 'tool-revision-full',  name: 'Tool Revision — Full',     unit: 'flat', minQty: 1, step: 1, defaultQty: 1, desc: '~21 hrs dev + 15% overhead', partnerDesc: 'Major rebuild or transformation of an existing AI tool', note: '' }
+  ]}
+];
+
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let bundles = [{ bundleId: 1, name: '', items: [] }];
+let activeBundleId = 1;
+let nextBundleId = 2;
+let nextItemId = 1;
+
+function getBlock(blockId) {
+  for (const cat of CATEGORIES) {
+    const block = cat.blocks.find(b => b.id === blockId);
+    if (block) return { block, cat };
+  }
+  return null;
+}
+
+function allItems() { return bundles.flatMap(b => b.items); }
+function isBlockInAnyBundle(blockId) { return allItems().some(i => i.blockId === blockId); }
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
+function fmt(n) {
+  const cur = getCurrency();
+  const converted = convertAmount(n);
+  const formatted = Math.round(converted).toLocaleString('en-US');
+  return cur.prefix ? cur.symbol + formatted : formatted + cur.symbol;
+}
+function fmtUsd(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+function unitShort(unit) {
+  if (unit === 'hr')    return 'hr';
+  if (unit === 'mo')    return 'mo';
+  if (unit === 'day')   return 'day';
+  if (unit === 'trip')  return 'trip';
+  if (unit === 'visit') return 'visit';
+  if (unit === 'flat')  return '×';
+  return unit;
+}
+
+function fmtQtyVerbose(qty, unit) {
+  if (unit === 'flat') return qty === 1 ? '' : ' ×' + qty;
+  const u = unitShort(unit);
+  return ` (${qty} ${u}${qty !== 1 && unit !== 'flat' ? 's' : ''})`;
+}
+
+// ─── Calculations ──────────────────────────────────────────────────────────────
+function itemSubtotal(item) {
+  const gross = getBlockPrice(item.blockId) * item.qty;
+  if (!item.discount || item.discount <= 0) return gross;
+  if (item.discountType === 'pct') return gross * (1 - Math.min(item.discount, 100) / 100);
+  // Flat discount: entered in selected currency, convert to USD
+  const usdDisc = item.discount / getCurrency().rate;
+  return Math.max(0, gross - usdDisc);
+}
+function itemDiscountAmount(item) {
+  const gross = getBlockPrice(item.blockId) * item.qty;
+  return gross - itemSubtotal(item);
+}
+function bundleTotal(bundle) {
+  return bundle.items.reduce((s, item) => s + itemSubtotal(item), 0);
+}
+
+function calcTierCost() {
+  const tier = getSelectedTier();
+  if (tier.annualCost !== null) return tier.annualCost;
+  if (tier.id === 'impact') return tierCounts.impact * 200;
+  if (tier.id === 'impact-schools') return tierCounts.impactSchools * 3;
+  return 0;
+}
+
+function calcStandardTotal() {
+  return bundles.reduce((s, b) => s + bundleTotal(b), 0) + calcTierCost();
+}
+
+function calcDiscount(std) {
+  const val = parseFloat(document.getElementById('discountVal').value) || 0;
+  const type = document.getElementById('discountType').value;
+  if (val <= 0) return 0;
+  if (type === 'pct') return std * (Math.min(val, 100) / 100);
+  // Flat discount: entered in selected currency, convert back to USD for internal calc
+  const usdVal = val / getCurrency().rate;
+  return Math.min(usdVal, std);
+}
+
+// ─── Render: Block Cards ───────────────────────────────────────────────────────
+function renderBlocks() {
+  const container = document.getElementById('blocksContainer');
+  container.innerHTML = '';
+  for (const cat of CATEGORIES) {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+    section.innerHTML = `
+      <div class="category-header">
+        <div class="cat-dot" style="background:${cat.color}"></div>
+        <h3>${cat.label}</h3>
+      </div>
+      <div class="blocks-grid" id="grid-${cat.id}"></div>`;
+    container.appendChild(section);
+    const grid = section.querySelector('#grid-' + cat.id);
+    for (const block of cat.blocks) grid.appendChild(buildBlockCard(block));
+  }
+}
+
+function buildBlockCard(block) {
+  const isAdded = isBlockInAnyBundle(block.id);
+  const price = getBlockPrice(block.id);
+  const card = document.createElement('div');
+  card.className = 'block-card' + (isAdded ? ' in-quote' : '');
+  card.id = 'card-' + block.id;
+  const priceLabel = block.unit === 'flat' ? fmt(price) : fmt(price) + '/' + block.unit;
+  card.innerHTML = `
+    <div class="block-top">
+      <div class="block-name">${block.name}</div>
+      <div class="block-price">${priceLabel}</div>
+    </div>
+    <div class="block-desc">${block.desc}</div>
+    ${block.note ? `<div class="block-note">${block.note}</div>` : ''}
+    <button class="add-btn ${isAdded ? 'multi' : ''}" onclick="addBlock('${block.id}')">
+      ${isAdded ? '+ Add Another' : '+ Add'}
+    </button>`;
+  return card;
+}
+
+function refreshBlockCard(blockId) {
+  const card = document.getElementById('card-' + blockId);
+  if (!card) return;
+  const found = getBlock(blockId);
+  if (found) card.replaceWith(buildBlockCard(found.block));
+}
+
+// ─── Render: Quote Panel ───────────────────────────────────────────────────────
+function renderQuote() {
+  const wrap = document.getElementById('bundlesWrap');
+  const totalItems = allItems().length;
+
+  if (totalItems === 0 && bundles.length === 1 && !bundles[0].name) {
+    wrap.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">📦</span>
+        <span>Select services from the left to build a package</span>
+      </div>`;
+    return;
+  }
+
+  wrap.innerHTML = '';
+  for (const bundle of bundles) {
+    wrap.appendChild(buildBundleSection(bundle));
+  }
+}
+
+function buildBundleSection(bundle) {
+  const isActive = bundle.bundleId === activeBundleId;
+  const subtotal = bundleTotal(bundle);
+
+  const section = document.createElement('div');
+  section.className = 'bundle-section' + (isActive ? ' active' : '');
+  section.dataset.bundleId = bundle.bundleId;
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'bundle-header';
+  header.innerHTML = `
+    <div class="bundle-dot"></div>
+    <input class="bundle-name-input"
+           type="text"
+           value="${escHtml(bundle.name)}"
+           placeholder="Bundle name (e.g. Phase 1 — Discovery)"
+           onchange="renameBundle(${bundle.bundleId}, this.value)"
+           onclick="setActiveBundle(${bundle.bundleId})">
+    <span class="bundle-subtotal-badge" id="bst-${bundle.bundleId}">${subtotal > 0 ? fmt(subtotal) : ''}</span>
+    ${bundles.length > 1 ? `<button class="bundle-delete" onclick="deleteBundle(${bundle.bundleId}); event.stopPropagation();" title="Remove bundle">×</button>` : ''}`;
+  header.addEventListener('click', () => setActiveBundle(bundle.bundleId));
+  section.appendChild(header);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'bundle-body';
+  body.id = 'bbody-' + bundle.bundleId;
+
+  if (bundle.items.length === 0) {
+    body.innerHTML = `<div class="bundle-empty">No services added — click a block on the left</div>`;
+  } else {
+    // Group by category
+    for (const cat of CATEGORIES) {
+      const catItems = bundle.items.filter(i => i.catId === cat.id);
+      if (!catItems.length) continue;
+      const label = document.createElement('div');
+      label.className = 'q-cat-label';
+      label.style.color = cat.color;
+      label.textContent = cat.label;
+      body.appendChild(label);
+      for (const item of catItems) body.appendChild(buildLineItem(bundle.bundleId, item));
+    }
+  }
+
+  section.appendChild(body);
+  return section;
+}
+
+function buildLineItem(bundleId, item) {
+  const found = getBlock(item.blockId);
+  if (!found) return document.createElement('div');
+  const { block } = found;
+  const gross = getBlockPrice(item.blockId) * item.qty;
+  const net = itemSubtotal(item);
+  const hasDisc = item.discount > 0;
+  const atMin = item.qty <= block.minQty;
+  const unit = unitShort(block.unit);
+  const curSymbol = getCurrency().prefix ? getCurrency().symbol : getCurrency().symbol.trim();
+
+  const div = document.createElement('div');
+  div.className = 'line-item';
+  div.id = `li-${bundleId}-${item.itemId}`;
+  div.innerHTML = `
+    <div class="item-info">
+      <div class="item-name">${block.name}</div>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="changeQty(${bundleId}, ${item.itemId}, -1)" ${atMin ? 'disabled' : ''}>−</button>
+        <input class="qty-input" type="number"
+               value="${item.qty}"
+               min="${block.minQty}"
+               step="${block.step}"
+               onchange="setQty(${bundleId}, ${item.itemId}, this)"
+               onclick="event.stopPropagation()">
+        <span class="qty-unit">${unit}</span>
+        <button class="qty-btn" onclick="changeQty(${bundleId}, ${item.itemId}, 1)">+</button>
+      </div>
+      <div class="item-discount-row">
+        <button class="item-disc-btn ${hasDisc ? 'active' : ''}" onclick="toggleItemDiscount(${bundleId}, ${item.itemId})">${hasDisc ? '−' : '% off'}</button>
+        ${hasDisc ? `<div class="item-disc-inputs">
+          <input class="item-disc-input" type="number" min="0" value="${item.discount}"
+                 oninput="setItemDiscount(${bundleId}, ${item.itemId}, this.value)"
+                 onclick="event.stopPropagation()">
+          <select class="item-disc-type" onchange="setItemDiscountType(${bundleId}, ${item.itemId}, this.value)" onclick="event.stopPropagation()">
+            <option value="pct" ${item.discountType === 'pct' ? 'selected' : ''}>%</option>
+            <option value="flat" ${item.discountType === 'flat' ? 'selected' : ''}>${curSymbol}</option>
+          </select>
+        </div>
+        <span class="item-disc-tag">−${fmt(itemDiscountAmount(item))}</span>` : ''}
+      </div>
+    </div>
+    <div class="item-total" id="itotal-${bundleId}-${item.itemId}">${hasDisc ? `<span style="text-decoration:line-through;color:var(--slate-400);font-size:10px">${fmt(gross)}</span><br>` : ''}${fmt(net)}</div>
+    <button class="remove-btn" onclick="removeItem(${bundleId}, ${item.itemId})" title="Remove">×</button>`;
+  return div;
+}
+
+// ─── Render: Totals ────────────────────────────────────────────────────────────
+function renderTotals() {
+  const std = calcStandardTotal();
+  const disc = calcDiscount(std);
+  const partner = std - disc;
+  const hasItems = allItems().length > 0 || calcTierCost() > 0;
+
+  document.getElementById('standardTotal').textContent = hasItems ? fmt(std) : '—';
+  document.getElementById('discountDisplay').textContent = disc > 0 ? '−' + fmt(disc) : '';
+  document.getElementById('partnerPrice').textContent = hasItems ? fmt(partner) : '—';
+
+  const sn = document.getElementById('savingsNote');
+  if (disc > 0 && hasItems) {
+    sn.textContent = `Partner saves ${fmt(disc)} — ${Math.round(disc / std * 100)}% off standard`;
+    sn.classList.add('show');
+  } else { sn.classList.remove('show'); }
+}
+
+function renderAlerts() {
+  const blockIds = allItems().map(i => i.blockId);
+  const hasBuild = blockIds.some(id => id === 'tool-build-initial' || id === 'tool-build-addl');
+  const hasPilot = blockIds.includes('tool-pilot');
+  document.getElementById('comboAlert').classList.toggle('show', hasBuild && hasPilot);
+}
+
+function render() { renderQuote(); renderTotals(); renderAlerts(); }
+
+// ─── Targeted updates (avoid full re-render on qty change) ────────────────────
+function updateBundleSubtotal(bundleId) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const total = bundleTotal(bundle);
+  const el = document.getElementById('bst-' + bundleId);
+  if (el) el.textContent = total > 0 ? fmt(total) : '';
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+function addBlock(blockId) {
+  const found = getBlock(blockId);
+  if (!found) return;
+  let bundle = bundles.find(b => b.bundleId === activeBundleId);
+  if (!bundle) { bundle = bundles[0]; activeBundleId = bundle.bundleId; }
+  bundle.items.push({ itemId: nextItemId++, blockId, catId: found.cat.id, qty: found.block.defaultQty, discount: 0, discountType: 'pct' });
+  refreshBlockCard(blockId);
+  render();
+}
+
+function removeItem(bundleId, itemId) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const blockId = bundle.items.find(i => i.itemId === itemId)?.blockId;
+  bundle.items = bundle.items.filter(i => i.itemId !== itemId);
+  if (blockId) refreshBlockCard(blockId);
+  render();
+}
+
+function changeQty(bundleId, itemId, dir) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const item = bundle.items.find(i => i.itemId === itemId);
+  if (!item) return;
+  const found = getBlock(item.blockId);
+  if (!found) return;
+  const { block } = found;
+  const newQty = Math.round((item.qty + dir * block.step) * 100) / 100;
+  if (newQty < block.minQty) return;
+  item.qty = newQty;
+  render();
+}
+
+function setQty(bundleId, itemId, inputEl) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const item = bundle.items.find(i => i.itemId === itemId);
+  if (!item) return;
+  const found = getBlock(item.blockId);
+  if (!found) return;
+  const { block } = found;
+
+  let val = parseFloat(inputEl.value);
+  if (isNaN(val) || val < block.minQty) val = block.minQty;
+  val = Math.round(Math.round(val / block.step) * block.step * 100) / 100;
+  item.qty = val;
+  render();
+}
+
+function toggleItemDiscount(bundleId, itemId) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const item = bundle.items.find(i => i.itemId === itemId);
+  if (!item) return;
+  if (item.discount > 0) { item.discount = 0; }
+  else { item.discount = 10; item.discountType = 'pct'; }
+  render();
+}
+
+function setItemDiscount(bundleId, itemId, val) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const item = bundle.items.find(i => i.itemId === itemId);
+  if (!item) return;
+  item.discount = parseFloat(val) || 0;
+  // Update totals without full re-render for responsiveness
+  const gross = getBlockPrice(item.blockId) * item.qty;
+  const net = itemSubtotal(item);
+  const totalEl = document.getElementById(`itotal-${bundleId}-${itemId}`);
+  if (totalEl) {
+    const hasDisc = item.discount > 0;
+    totalEl.innerHTML = hasDisc ? `<span style="text-decoration:line-through;color:var(--slate-400);font-size:10px">${fmt(gross)}</span><br>${fmt(net)}` : fmt(net);
+  }
+  // Update discount tag
+  const li = document.getElementById(`li-${bundleId}-${itemId}`);
+  const tag = li?.querySelector('.item-disc-tag');
+  if (tag) tag.textContent = '−' + fmt(itemDiscountAmount(item));
+  updateBundleSubtotal(bundleId);
+  renderTotals();
+}
+
+function setItemDiscountType(bundleId, itemId, type) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (!bundle) return;
+  const item = bundle.items.find(i => i.itemId === itemId);
+  if (!item) return;
+  item.discountType = type;
+  render();
+}
+
+function addBundle() {
+  const newBundle = { bundleId: nextBundleId++, name: '', items: [] };
+  bundles.push(newBundle);
+  activeBundleId = newBundle.bundleId;
+  render();
+  // Focus the new bundle's name input
+  setTimeout(() => {
+    const input = document.querySelector(`[data-bundle-id="${newBundle.bundleId}"] .bundle-name-input`);
+    if (input) input.focus();
+  }, 50);
+}
+
+function deleteBundle(bundleId) {
+  if (bundles.length <= 1) return;
+  const blockIds = bundles.find(b => b.bundleId === bundleId)?.items.map(i => i.blockId) || [];
+  bundles = bundles.filter(b => b.bundleId !== bundleId);
+  if (activeBundleId === bundleId) activeBundleId = bundles[0].bundleId;
+  // Refresh block cards that might have changed state
+  const affectedBlocks = [...new Set(blockIds)].filter(id => !isBlockInAnyBundle(id));
+  affectedBlocks.forEach(refreshBlockCard);
+  render();
+}
+
+function setActiveBundle(bundleId) {
+  activeBundleId = bundleId;
+  document.querySelectorAll('.bundle-section').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.bundleId) === bundleId);
+  });
+}
+
+function renameBundle(bundleId, name) {
+  const bundle = bundles.find(b => b.bundleId === bundleId);
+  if (bundle) bundle.name = name;
+}
+
+function clearAll() {
+  const blockIds = [...new Set(allItems().map(i => i.blockId))];
+  bundles = [{ bundleId: 1, name: '', items: [] }];
+  activeBundleId = 1;
+  nextBundleId = 2;
+  selectedTierId = 'free';
+  tierCounts = { impact: 5, impactSchools: 1000 };
+  document.getElementById('discountVal').value = '';
+  blockIds.forEach(refreshBlockCard);
+  renderTierCards();
+  renderLicenseSummary();
+  render();
+}
+
+function setCurrency(code) {
+  if (!CURRENCIES[code]) return;
+  selectedCurrency = code;
+  document.getElementById('currencySelect').value = code;
+  const sym = getCurrency().prefix ? getCurrency().symbol.trim() : getCurrency().symbol.trim();
+  document.getElementById('discFlatLabel').textContent = sym;
+  renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+}
+
+
+// ─── Copy for Proposal ────────────────────────────────────────────────────────
+function copyForProposal() {
+  if (!allItems().length) { showToast('Add services first'); return; }
+
+  const partner      = document.getElementById('partnerName').value.trim() || '[Partner]';
+  const today        = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const std          = calcStandardTotal();
+  const disc         = calcDiscount(std);
+  const partnerTotal = std - disc;
+  const multiBundle  = bundles.filter(b => b.items.length > 0).length > 1;
+
+  const W = 48;
+  const padLine = (left, right) => left + ' ' + '.'.repeat(Math.max(2, W - left.length - right.length - 1)) + ' ' + right;
+
+  const tier = getSelectedTier();
+
+  const lines = [];
+  lines.push('Playlab — Package Quote');
+  lines.push(`Partner: ${partner}`);
+  lines.push(`Date: ${today}`);
+  if (selectedCurrency !== 'USD') {
+    const rateNote = ratesLastUpdated ? `ECB rate as of ${ratesLastUpdated}` : 'approximate rate';
+    lines.push(`Currency: ${selectedCurrency} (${getCurrency().rate}× USD — ${rateNote})`);
+  }
+  lines.push('');
+  lines.push('SOFTWARE LICENSE');
+  lines.push('─'.repeat(W));
+  const tierCost = calcTierCost();
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'impact') tierDetail = `${tier.priceLabel} × ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') tierDetail = `${tier.priceLabel} × ${tierCounts.impactSchools.toLocaleString()} students`;
+  lines.push(padLine(`  • Playlab ${tier.name} — ${tierDetail}`, fmt(tierCost)));
+  lines.push('');
+  if (allItems().length > 0) {
+    lines.push('SERVICES');
+    lines.push('─'.repeat(W));
+  }
+
+  for (const bundle of bundles) {
+    if (!bundle.items.length) continue;
+    lines.push('');
+    if (multiBundle) {
+      const bundleLabel = bundle.name || `Bundle ${bundle.bundleId}`;
+      lines.push(`[ ${bundleLabel} ]`);
+    }
+    for (const cat of CATEGORIES) {
+      const catItems = bundle.items.filter(i => i.catId === cat.id);
+      if (!catItems.length) continue;
+      if (multiBundle) lines.push(`  ${cat.label}`);
+      else lines.push(cat.label);
+      for (const item of catItems) {
+        const found = getBlock(item.blockId);
+        if (!found) continue;
+        const { block } = found;
+        const gross = getBlockPrice(item.blockId) * item.qty;
+        const net = itemSubtotal(item);
+        const qtyStr = fmtQtyVerbose(item.qty, block.unit);
+        const indent = multiBundle ? '    • ' : '  • ';
+        if (item.discount > 0) {
+          lines.push(padLine(`${indent}${block.name}${qtyStr}`, fmt(net)));
+          const discLabel = item.discountType === 'pct' ? `${item.discount}% discount` : `${fmt(item.discount)} discount`;
+          lines.push(`${indent}  (${discLabel} applied — standard: ${fmt(gross)})`);
+        } else {
+          lines.push(padLine(`${indent}${block.name}${qtyStr}`, fmt(gross)));
+        }
+      }
+    }
+    if (multiBundle) {
+      const bTotal = bundleTotal(bundle);
+      lines.push(padLine('  Bundle Total', fmt(bTotal)));
+    }
+  }
+
+  lines.push('');
+  lines.push('─'.repeat(W));
+  lines.push(padLine('Standard Total', fmt(std)));
+
+  if (disc > 0) {
+    const discVal  = document.getElementById('discountVal').value;
+    const discType = document.getElementById('discountType').value;
+    const discLabel = discType === 'pct' ? `Discount (${discVal}%)` : `Discount (${fmt(parseFloat(discVal) || 0)})`;
+    lines.push(padLine(discLabel, '−' + fmt(disc)));
+  }
+
+  lines.push('─'.repeat(W));
+  lines.push(padLine('Partner Price', fmt(partnerTotal)));
+
+  if (disc > 0) {
+    const pct = Math.round(disc / std * 100);
+    lines.push('');
+    lines.push(`Total Partner Savings: ${fmt(disc)} (${pct}% off standard rate)`);
+  }
+
+  // Per-unit costs
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+  if (students > 0 || educators > 0) {
+    lines.push('');
+    if (students > 0) lines.push(`Per-student cost: ${fmt(Math.round(partnerTotal / students))}/student/year (${students.toLocaleString()} students)`);
+    if (educators > 0) lines.push(`Per-educator cost: ${fmt(Math.round(partnerTotal / educators))}/educator/year (${educators.toLocaleString()} educators)`);
+  }
+
+  lines.push('');
+  lines.push('* AI model usage costs are covered by Playlab and not passed on to partners.');
+
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = Object.assign(document.createElement('textarea'), { value: text, style: 'position:fixed;opacity:0' });
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }).finally(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy for Proposal'; btn.classList.remove('copied'); }, 2200);
+    showToast('Copied to clipboard!');
+  });
+}
+
+// ─── Util ──────────────────────────────────────────────────────────────────────
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+
+// ─── URL State ────────────────────────────────────────────────────────────────
+function saveToUrl() {
+  const state = {
+    t: selectedTierId,
+    tc: tierCounts,
+    cur: selectedCurrency,
+    p: document.getElementById('partnerName').value,
+    b: bundles.map(b => ({ n: b.name, i: b.items.map(it => ({ b: it.blockId, q: it.qty, dv: it.discount || 0, dt: it.discountType || 'pct' })) })),
+    d: { v: document.getElementById('discountVal').value, t: document.getElementById('discountType').value },
+    sc: document.getElementById('studentCount').value,
+    ec: document.getElementById('educatorCount').value
+  };
+  try {
+    const encoded = btoa(JSON.stringify(state));
+    history.replaceState(null, '', '#' + encoded);
+  } catch (e) { /* ignore */ }
+}
+
+function loadFromUrl() {
+  const hash = location.hash.slice(1);
+  if (!hash) return false;
+  try {
+    const state = JSON.parse(atob(hash));
+    selectedTierId = state.t || 'free';
+    if (state.tc) { tierCounts.impact = state.tc.impact || state.tc.adopt || 5; tierCounts.impactSchools = state.tc.impactSchools || state.tc.enterprise || 1000; }
+    if (state.cur && CURRENCIES[state.cur]) {
+      selectedCurrency = state.cur;
+      document.getElementById('currencySelect').value = selectedCurrency;
+      const sym = getCurrency().prefix ? getCurrency().symbol.trim() : getCurrency().symbol.trim();
+      document.getElementById('discFlatLabel').textContent = sym;
+    }
+    if (state.p) document.getElementById('partnerName').value = state.p;
+    if (state.d) {
+      document.getElementById('discountVal').value = state.d.v || '';
+      document.getElementById('discountType').value = state.d.t || 'pct';
+    }
+    if (state.sc) document.getElementById('studentCount').value = state.sc;
+    if (state.ec) document.getElementById('educatorCount').value = state.ec;
+
+    bundles = [];
+    nextItemId = 1;
+    nextBundleId = 1;
+    for (const sb of (state.b || [])) {
+      const bundle = { bundleId: nextBundleId++, name: sb.n || '', items: [] };
+      for (const si of (sb.i || [])) {
+        const found = getBlock(si.b);
+        if (found) {
+          bundle.items.push({ itemId: nextItemId++, blockId: si.b, catId: found.cat.id, qty: si.q, discount: si.dv || 0, discountType: si.dt || 'pct' });
+        }
+      }
+      bundles.push(bundle);
+    }
+    if (!bundles.length) bundles = [{ bundleId: 1, name: '', items: [] }];
+    activeBundleId = bundles[0].bundleId;
+    return true;
+  } catch (e) { return false; }
+}
+
+// ─── Per-student / Per-educator Cost ──────────────────────────────────────────
+function renderInsights() {
+  const std = calcStandardTotal();
+  const disc = calcDiscount(std);
+  const partner = std - disc;
+  const hasItems = allItems().length > 0 || calcTierCost() > 0;
+
+  const section = document.getElementById('insightsSection');
+  section.style.display = hasItems ? '' : 'none';
+  if (!hasItems) return;
+
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+
+  document.getElementById('perStudentCost').textContent = students > 0
+    ? fmt(Math.round(partner / students)) + '/student/yr'
+    : '—';
+  document.getElementById('perEducatorCost').textContent = educators > 0
+    ? fmt(Math.round(partner / educators)) + '/educator/yr'
+    : '—';
+
+  renderMultiYear(partner);
+}
+
+function renderMultiYear(partnerPrice) {
+  const body = document.getElementById('multiyearBody');
+  const tierCost = calcTierCost();
+  const servicesCost = partnerPrice - tierCost;
+
+  // Year 1: full; Year 2: license + 40% services; Year 3: license + 20% services
+  const y1 = partnerPrice;
+  const y2 = tierCost + Math.round(servicesCost * 0.4);
+  const y3 = tierCost + Math.round(servicesCost * 0.2);
+  const total = y1 + y2 + y3;
+
+  body.innerHTML = `
+    <tr><td>Software License</td><td>${fmt(tierCost)}</td><td>${fmt(tierCost)}</td><td>${fmt(tierCost)}</td><td class="highlight">${fmt(tierCost * 3)}</td></tr>
+    <tr><td>Learning Services</td><td>${fmt(servicesCost)}</td><td>${fmt(Math.round(servicesCost * 0.4))}</td><td>${fmt(Math.round(servicesCost * 0.2))}</td><td class="highlight">${fmt(servicesCost + Math.round(servicesCost * 0.4) + Math.round(servicesCost * 0.2))}</td></tr>
+    <tr style="border-top:2px solid var(--slate-200)"><td><strong>Total</strong></td><td class="highlight">${fmt(y1)}</td><td class="highlight">${fmt(y2)}</td><td class="highlight">${fmt(y3)}</td><td class="highlight">${fmt(total)}</td></tr>`;
+}
+
+// ─── Copy as Markdown ─────────────────────────────────────────────────────────
+function copyAsMarkdown() {
+  if (!allItems().length) { showToast('Add services first'); return; }
+
+  const partner      = document.getElementById('partnerName').value.trim() || '[Partner]';
+  const today        = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const std          = calcStandardTotal();
+  const disc         = calcDiscount(std);
+  const partnerTotal = std - disc;
+  const tier         = getSelectedTier();
+  const tierCost     = calcTierCost();
+
+  const lines = [];
+  lines.push(`# Playlab — Package Quote`);
+  lines.push(`**Partner:** ${partner}  `);
+  lines.push(`**Date:** ${today}`);
+  if (selectedCurrency !== 'USD') {
+    const rateNote = ratesLastUpdated ? `ECB rate as of ${ratesLastUpdated}` : 'approximate rate';
+    lines.push(`**Currency:** ${selectedCurrency} (${getCurrency().rate}× USD — ${rateNote})`);
+  }
+  lines.push('');
+
+  // Software
+  lines.push('## Software License');
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'impact') tierDetail = `${tier.priceLabel} × ${tierCounts.impact} users`;
+  else if (tier.id === 'impact-schools') tierDetail = `${tier.priceLabel} × ${tierCounts.impactSchools.toLocaleString()} students`;
+  lines.push(`- **Playlab ${tier.name}** — ${tierDetail} — **${fmt(tierCost)}**`);
+  lines.push('');
+
+  // Services
+  if (allItems().length > 0) {
+    lines.push('## Learning Services');
+    lines.push('');
+    lines.push('| Service | Description | Qty | Price |');
+    lines.push('|---------|-------------|-----|-------|');
+
+    for (const bundle of bundles) {
+      if (!bundle.items.length) continue;
+      if (bundles.filter(b => b.items.length).length > 1) {
+        const label = bundle.name || `Bundle ${bundle.bundleId}`;
+        lines.push(`| **${label}** | | | **${fmt(bundleTotal(bundle))}** |`);
+      }
+      for (const item of bundle.items) {
+        const found = getBlock(item.blockId);
+        if (!found) continue;
+        const { block } = found;
+        const net = itemSubtotal(item);
+        const qtyStr = block.unit === 'flat' ? (item.qty === 1 ? '—' : `×${item.qty}`) : `${item.qty} ${unitShort(block.unit)}${item.qty !== 1 ? 's' : ''}`;
+        const desc = block.partnerDesc || block.desc;
+        const discNote = item.discount > 0 ? ` *(${item.discountType === 'pct' ? item.discount + '%' : fmt(item.discount)} off)*` : '';
+        lines.push(`| ${block.name} | ${desc}${discNote} | ${qtyStr} | ${fmt(net)} |`);
+      }
+    }
+    lines.push('');
+  }
+
+  // Totals
+  lines.push('## Investment Summary');
+  lines.push(`| | |`);
+  lines.push(`|---|---|`);
+  lines.push(`| Standard Total | **${fmt(std)}** |`);
+  if (disc > 0) {
+    const discVal  = document.getElementById('discountVal').value;
+    const discType = document.getElementById('discountType').value;
+    const discLabel = discType === 'pct' ? `Discount (${discVal}%)` : `Discount (${fmt(parseFloat(discVal))})`;
+    lines.push(`| ${discLabel} | −${fmt(disc)} |`);
+  }
+  lines.push(`| **Partner Price** | **${fmt(partnerTotal)}** |`);
+
+  // Per-unit costs
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+  if (students > 0 || educators > 0) {
+    lines.push('');
+    if (students > 0) lines.push(`- **Per-student cost:** ${fmt(Math.round(partnerTotal / students))}/student/year`);
+    if (educators > 0) lines.push(`- **Per-educator cost:** ${fmt(Math.round(partnerTotal / educators))}/educator/year`);
+  }
+
+  lines.push('');
+  lines.push('*AI model usage costs are covered by Playlab and not passed on to partners.*');
+
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = Object.assign(document.createElement('textarea'), { value: text, style: 'position:fixed;opacity:0' });
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }).finally(() => {
+    const btn = document.getElementById('copyMdBtn');
+    btn.textContent = '✓'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'MD'; btn.classList.remove('copied'); }, 2200);
+    showToast('Markdown copied!');
+  });
+}
+
+// ─── Google Doc Export ─────────────────────────────────────────────────────────
+const GOOGLE_CLIENT_ID = '250408974404-nvnm9m62vc2g8gsn0u0k1t8gt0h0caa2';
+let gToken = null;
+let gTokenExpiry = 0;
+
+async function gApiFetch(url, opts = {}, retry = true) {
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer ' + gToken, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+  const data = await res.json();
+  if (res.status === 401 && retry) {
+    gToken = null;
+    await requestGoogleToken();
+    return gApiFetch(url, opts, false);
+  }
+  if (!res.ok) throw new Error(data.error?.message || 'Google API error');
+  return data;
+}
+
+function requestGoogleToken() {
+  return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.accounts) {
+      reject(new Error('Google sign-in not loaded. Please refresh and try again.'));
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp) => {
+        if (resp.error) return reject(resp);
+        gToken = resp.access_token;
+        gTokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000 - 60000;
+        resolve();
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+async function exportToGoogleDoc() {
+  if (!allItems().length && calcTierCost() === 0) {
+    showToast('Add services first');
+    return;
+  }
+
+  const btn = document.getElementById('exportDocBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>Signing in...</span>';
+
+  // Open tab immediately (before async work) to avoid popup blocker
+  const docTab = window.open('about:blank', '_blank');
+
+  try {
+    if (!gToken || Date.now() > gTokenExpiry) {
+      gToken = null;
+      await requestGoogleToken();
+    }
+
+    btn.innerHTML = '<span>Creating proposal...</span>';
+
+    const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
+
+    // 1. Create new doc in user's own Drive
+    const createRes = await gApiFetch('https://www.googleapis.com/drive/v3/files', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: partner + ' \u2014 Playlab Partnership Proposal',
+        mimeType: 'application/vnd.google-apps.document'
+      })
+    });
+    const docId = createRes.id;
+
+    btn.innerHTML = '<span>Populating content...</span>';
+
+    // 2. Build content
+    const { text, formats } = buildProposalDoc();
+
+    // 3. Insert text
+    await gApiFetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+      method: 'POST',
+      body: JSON.stringify({ requests: [{ insertText: { location: { index: 1 }, text: text } }] })
+    });
+
+    // 4. Apply formatting + set font to Lexend
+    const fontReq = {
+      updateTextStyle: {
+        range: { startIndex: 1, endIndex: 1 + text.length },
+        textStyle: { weightedFontFamily: { fontFamily: 'Lexend' }, fontSize: { magnitude: 10, unit: 'PT' } },
+        fields: 'weightedFontFamily,fontSize'
+      }
+    };
+    const allFormats = [fontReq, ...formats];
+    await gApiFetch('https://docs.googleapis.com/v1/documents/' + docId + ':batchUpdate', {
+      method: 'POST',
+      body: JSON.stringify({ requests: allFormats })
+    });
+
+    // 5. Navigate pre-opened tab to the doc
+    if (docTab) docTab.location.href = 'https://docs.google.com/document/d/' + docId + '/edit';
+    else window.open('https://docs.google.com/document/d/' + docId + '/edit', '_blank');
+    showToast('Proposal created!');
+  } catch (err) {
+    console.error('Export failed:', err);
+    if (docTab) docTab.close();
+    if (err.error === 'popup_closed_by_user') showToast('Sign-in cancelled');
+    else { showToast('Export failed \u2014 see console'); gToken = null; }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Export to Google Doc';
+  }
+}
+
+function buildProposalDoc() {
+  const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
+  const std = calcStandardTotal();
+  const disc = calcDiscount(std);
+  const partnerTotal = std - disc;
+  const tier = getSelectedTier();
+  const tierCost = calcTierCost();
+
+  let text = '';
+  const headings = [];
+  const bolds = [];
+
+  function h1(str) { const s = text.length; text += str + '\n'; headings.push({ start: s, end: text.length - 1, style: 'HEADING_1' }); }
+  function h2(str) { const s = text.length; text += str + '\n'; headings.push({ start: s, end: text.length - 1, style: 'HEADING_2' }); }
+  function p(str) { text += str + '\n'; }
+  function bold(label, value) { const s = text.length; text += label; bolds.push({ start: s, end: text.length }); text += value + '\n'; }
+  function blank() { text += '\n'; }
+
+  // Title
+  h1(partner + ' + Playlab 2025\u2013\u201926');
+  p('Build AI capacity and custom tools to solve problems in your unique context.');
+  blank();
+
+  // Overview
+  h1('Overview');
+  p('Playlab is a tech non-profit dedicated to helping educators and school communities harness AI to address real needs. We build AI literacy and empower users to design and deploy their own AI solutions\u2014supported by hands-on professional development, coaching, and our school-safe AI software. We take an open-source approach to technology development\u2014with the goal of democratizing AI access and helping build a lasting ecosystem for education. Today, more than 80,000 educators are using Playlab to drive impact in their context.');
+  blank();
+  p('[Add partner context here]');
+  blank();
+
+  // Goals
+  h1('Partnership Goals and Outcomes');
+  p('[Goals and outcomes to be defined collaboratively]');
+  blank();
+
+  // Services & Pricing
+  h1('Services & Pricing');
+  blank();
+
+  // Software License
+  h2('Software License');
+  let tierDetail = tier.priceLabel;
+  if (tier.id === 'impact') tierDetail = tier.priceLabel + ' \u00D7 ' + tierCounts.impact + ' users';
+  else if (tier.id === 'impact-schools') tierDetail = tier.priceLabel + ' \u00D7 ' + tierCounts.impactSchools.toLocaleString() + ' students';
+  bold('Playlab ' + tier.name + ': ', tierDetail + ' \u2014 ' + fmtUsd(tierCost) + '/year');
+  p('Full access to Playlab\u2019s AI platform for participating educators and leaders. Private organization workspace for building, sharing, and managing apps across schools. Access to curriculum-aligned and custom knowledge libraries. Integrations with tools like Clever and Canvas for rostering and access. Multi-model support (ChatGPT, Claude, Gemini, LLaMA) with built-in safeguards. Advanced sharing options for embedding apps and managing permissions.');
+  blank();
+
+  // Learning Services
+  if (allItems().length > 0) {
+    h2('Learning Services');
+    const multiBundle = bundles.filter(b => b.items.length).length > 1;
+
+    for (const bundle of bundles) {
+      if (!bundle.items.length) continue;
+
+      if (multiBundle) {
+        const bLabel = bundle.name || 'Bundle ' + bundle.bundleId;
+        bold(bLabel + ': ', fmtUsd(bundleTotal(bundle)));
+      }
+
+      for (const cat of CATEGORIES) {
+        const catItems = bundle.items.filter(i => i.catId === cat.id);
+        if (!catItems.length) continue;
+
+        const cs = text.length;
+        text += cat.label;
+        bolds.push({ start: cs, end: text.length });
+        text += '\n';
+
+        for (const item of catItems) {
+          const found = getBlock(item.blockId);
+          if (!found) continue;
+          const { block } = found;
+          const gross = getBlockPrice(item.blockId) * item.qty;
+          const net = itemSubtotal(item);
+          const qtyStr = fmtQtyVerbose(item.qty, block.unit);
+          let priceStr;
+          if (item.discount > 0) {
+            const discDesc = item.discountType === 'pct' ? item.discount + '% off' : fmtUsd(item.discount) + ' off';
+            priceStr = fmtUsd(net) + ' (' + discDesc + ' standard ' + fmtUsd(gross) + ')';
+          } else {
+            priceStr = fmtUsd(gross);
+          }
+          p('  \u2022  ' + block.name + qtyStr + ' \u2014 ' + priceStr);
+          p('      ' + (block.partnerDesc || block.desc));
+        }
+      }
+      blank();
+    }
+  }
+
+  // Investment Summary
+  h2('Investment Summary');
+  bold('Standard Total: ', fmtUsd(std));
+  if (disc > 0) {
+    const discVal = document.getElementById('discountVal').value;
+    const discType = document.getElementById('discountType').value;
+    const discLabel = discType === 'pct' ? 'Discount (' + discVal + '%)' : 'Discount (' + fmtUsd(parseFloat(discVal)) + ')';
+    bold(discLabel + ': ', '\u2212' + fmtUsd(disc));
+  }
+  bold('Partner Price: ', fmtUsd(partnerTotal));
+  blank();
+
+  const students = parseInt(document.getElementById('studentCount').value) || 0;
+  const educators = parseInt(document.getElementById('educatorCount').value) || 0;
+  if (students > 0) p('Per-student cost: ' + fmtUsd(Math.round(partnerTotal / students)) + '/student/year (' + students.toLocaleString() + ' students)');
+  if (educators > 0) p('Per-educator cost: ' + fmtUsd(Math.round(partnerTotal / educators)) + '/educator/year (' + educators.toLocaleString() + ' educators)');
+  if (students > 0 || educators > 0) blank();
+
+  p('* AI model usage costs are covered by Playlab and are not passed on to partners. License fees are based on estimated usage levels provided at the time of purchase; actual usage may vary. Playlab will work with the Organization to support AI tool deployment that stays within reasonable usage limits.');
+  blank();
+
+  // Next Steps
+  h1('Next Steps & Terms');
+  p('\u2022  Confirm Proposal and Statement of Work');
+  p('\u2022  Sign & Execute Contract \u2014 requires acknowledgement that your organization has read, understood, and agrees to adhere to Playlab Policies and Playlab\u2019s Data Privacy Addendum.');
+  p('\u2022  Payment due 30 days after signing.');
+  p('\u2022  Provide Playlab with the following information:');
+  p('      \u2022  Playlab should send invoices to: [Name and email]');
+  p('      \u2022  Playlab contract signing to: [Name and email]');
+  p('      \u2022  CTO: [Name and email]');
+  blank();
+
+  bold('Playlab Contact', '');
+  p('33170 Alvarado Niles Road #3048, Union City, CA, 94587');
+  p('Denise Sulit \u2014 denise@playlab.ai; 732-589-1380');
+
+  // Build format requests (doc body starts at index 1)
+  const formats = [];
+  for (const h of headings) {
+    formats.push({
+      updateParagraphStyle: {
+        range: { startIndex: h.start + 1, endIndex: h.end + 1 },
+        paragraphStyle: { namedStyleType: h.style },
+        fields: 'namedStyleType'
+      }
+    });
+  }
+  for (const b of bolds) {
+    if (b.end > b.start) {
+      formats.push({
+        updateTextStyle: {
+          range: { startIndex: b.start + 1, endIndex: b.end + 1 },
+          textStyle: { bold: true },
+          fields: 'bold'
+        }
+      });
+    }
+  }
+
+  return { text, formats };
+}
+
+// ─── Auto-save on changes ─────────────────────────────────────────────────────
+const _origRender = render;
+render = function() { _origRender(); renderInsights(); saveToUrl(); };
+
+const _origRenderTotals = renderTotals;
+renderTotals = function() { _origRenderTotals(); renderInsights(); saveToUrl(); };
+
+// ─── Tab Switching ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.header-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelector('.builder').classList.toggle('active', tab === 'builder');
+  document.getElementById('examplesPage').classList.toggle('active', tab === 'examples');
+  if (tab === 'examples') renderExamples();
+}
+
+// ─── Software Options (for examples) ──────────────────────────────────────────
+const SW_OPTIONS = [
+  { id: 'none',             label: 'None',                     blockId: null,              defaultQty: 0,     unit: '',        pilotDiscount: 0 },
+  { id: 'sw-play',          label: 'Play (6-mo trial)',        blockId: 'sw-play',         defaultQty: 1,     unit: 'flat',    pilotDiscount: 0.5 },
+  { id: 'sw-impact',        label: 'Impact (per user)',        blockId: 'sw-impact',       defaultQty: 20,    unit: 'user',    pilotDiscount: 0.5 },
+  { id: 'sw-impact-schools',label: 'Impact Schools (per student)', blockId: 'sw-impact-schools',defaultQty: 5000,  unit: 'student', pilotDiscount: 0 },
+];
+
+function getSwOption(id) { return SW_OPTIONS.find(o => o.id === id) || SW_OPTIONS[0]; }
+
+function calcSwPrice(swId, qty) {
+  if (!swId || swId === 'none') return 0;
+  const prices = { 'sw-play': 1500, 'sw-impact': 200, 'sw-impact-schools': 3 };
+  return (prices[swId] || 0) * qty;
+}
+
+// ─── Example Scenarios ──────────────────────────────────────────────────────
+const EXAMPLES = [
+  // ── AI Agency for Educators ──
+  { id: 'edu-starter', title: 'AI Agency for Educators — Starter', subtitle: '3 hrs · Foundational intro — learn how AI works and build a first tool', color: '#0EA5E9', badgeText: 'Recommended Start', badgeBg: '#e0f2fe', badgeColor: '#0369a1',
+    items: [{ blockId: 'facilitation', qty: 3 }, { blockId: 'admin-meetings', qty: 1 }],
+    sw: { optionId: 'sw-play', qty: 1 }, discountLabel: null, renewalLabel: null },
+  { id: 'edu-core', title: 'AI Agency for Educators — Core', subtitle: '6 hrs · Deeper learning — intentional design with advanced features', color: '#0EA5E9', badgeText: 'Most Popular', badgeBg: '#e0f2fe', badgeColor: '#0369a1',
+    items: [{ blockId: 'facilitation', qty: 6 }, { blockId: 'admin-meetings', qty: 1.5 }, { blockId: 'office-hours', qty: 2 }],
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: 'Pilot Phase Incentive', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+  { id: 'edu-full', title: 'AI Agency for Educators — Full Agency', subtitle: '9 hrs · Gold standard — build, evaluate, and showcase AI tools', color: '#0EA5E9', badgeText: 'Gold Standard', badgeBg: '#e0f2fe', badgeColor: '#0369a1',
+    items: [{ blockId: 'facilitation', qty: 9 }, { blockId: 'admin-meetings', qty: 2 }, { blockId: 'office-hours', qty: 3 }, { blockId: 'coaching', qty: 2 }],
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: 'Full Series Discount (20%)', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+  // ── AI Agency for Students ──
+  { id: 'stu-sprint', title: 'Student AI Design Sprint — Core', subtitle: '6 hrs · Playlab-facilitated student event + educator PD', color: '#f97316', badgeText: 'Student-Facing', badgeBg: '#fff7ed', badgeColor: '#c2410c',
+    items: [{ blockId: 'facilitation', qty: 6 }, { blockId: 'facilitation', qty: 7 }, { blockId: 'admin-meetings', qty: 1 }],
+    sw: { optionId: 'sw-impact-schools', qty: 5000 }, discountLabel: null, renewalLabel: null },
+  // ── Solutions for AI Impact ──
+  { id: 'impact-build', title: 'Solutions for AI Impact — Tool Build', subtitle: 'Ideation + custom AI tool build for a priority challenge', color: '#8b5cf6', badgeText: 'Tool Build', badgeBg: '#ede9fe', badgeColor: '#6d28d9',
+    items: [{ blockId: 'ideation-lp-le', qty: 1 }, { blockId: 'tool-build-initial', qty: 1 }],
+    sw: { optionId: 'sw-impact', qty: 20 }, discountLabel: null, renewalLabel: null },
+  { id: 'impact-full', title: 'Solutions for AI Impact — Full Pathway', subtitle: 'Ideation → 3 tool builds → pilot → scaling support', color: '#8b5cf6', badgeText: 'Highest Value', badgeBg: '#ede9fe', badgeColor: '#6d28d9',
+    items: [{ blockId: 'ideation-lp-le', qty: 1 }, { blockId: 'tool-build-initial', qty: 1 }, { blockId: 'tool-build-addl', qty: 2 }, { blockId: 'tool-pilot', qty: 1 }, { blockId: 'admin-meetings', qty: 4 }],
+    sw: { optionId: 'sw-impact', qty: 50 }, discountLabel: 'Full Pathway Discount (20%)', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' },
+  // ── Comprehensive Partnership ──
+  { id: 'comprehensive', title: 'Comprehensive Partnership', subtitle: 'Full Agency for Educators + Full AI Impact Pathway + site visit', color: '#10b981', badgeText: 'Enterprise', badgeBg: '#ecfdf5', badgeColor: '#047857',
+    items: [{ blockId: 'facilitation', qty: 9 }, { blockId: 'coaching', qty: 2 }, { blockId: 'ideation-lp-le', qty: 1 }, { blockId: 'tool-build-initial', qty: 1 }, { blockId: 'tool-build-addl', qty: 2 }, { blockId: 'tool-pilot', qty: 1 }, { blockId: 'admin-meetings', qty: 4 }, { blockId: 'office-hours', qty: 4 }, { blockId: 'site-visit-full', qty: 1 }],
+    sw: { optionId: 'sw-impact-schools', qty: 5000 }, discountLabel: 'Full Series Discount (20%)', renewalLabel: 'Year 2 Renewal (30% loyalty off services)' }
+];
+
+let examplesState = JSON.parse(JSON.stringify(EXAMPLES));
+
+function calcExampleServiceTotal(ex) {
+  return ex.items.reduce((sum, item) => sum + getBlockPrice(item.blockId) * item.qty, 0);
+}
+function calcExampleSwTotal(ex) { return calcSwPrice(ex.sw.optionId, ex.sw.qty); }
+function calcExampleStandardTotal(ex) { return calcExampleServiceTotal(ex) + calcExampleSwTotal(ex); }
+function calcExamplePilotTotal(ex) {
+  const services = ex.items.reduce((sum, item) => item.blockId === 'coaching' ? sum : sum + getBlockPrice(item.blockId) * item.qty, 0);
+  const swOpt = getSwOption(ex.sw.optionId);
+  return services + calcExampleSwTotal(ex) * (1 - swOpt.pilotDiscount);
+}
+function calcExampleRenewalTotal(ex) {
+  return Math.round(calcExampleServiceTotal(ex) * 0.7) + calcExampleSwTotal(ex);
+}
+
+function renderExamples() {
+  const grid = document.getElementById('examplesGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < examplesState.length; i++) grid.appendChild(buildExampleCard(examplesState[i], i));
+}
+
+function buildExampleCard(ex, idx) {
+  const card = document.createElement('div');
+  card.className = 'example-card';
+  const stdTotal = calcExampleStandardTotal(ex);
+  const pilotTotal = calcExamplePilotTotal(ex);
+  const renewalTotal = calcExampleRenewalTotal(ex);
+  const discount = stdTotal - pilotTotal;
+  const swOpt = getSwOption(ex.sw.optionId);
+  const swTotal = calcExampleSwTotal(ex);
+  const showSwQty = swOpt.unit && swOpt.unit !== 'flat';
+
+  let bodyHtml = '';
+  if (ex.items.length > 0) {
+    for (const cat of CATEGORIES) {
+      const catItems = ex.items.filter(item => { const f = getBlock(item.blockId); return f && f.cat.id === cat.id; });
+      if (!catItems.length) continue;
+      bodyHtml += `<div class="example-cat-label" style="color:${cat.color}">${cat.label}</div>`;
+      for (const item of catItems) {
+        const f = getBlock(item.blockId); if (!f) continue;
+        const itemIdx = ex.items.indexOf(item);
+        bodyHtml += `<div class="example-line"><div class="example-line-left"><span class="example-line-name">${f.block.name}</span></div>
+          <div class="example-line-edit">
+            <button class="example-qty-btn" onclick="changeExampleQty(${idx},${itemIdx},-1)">−</button>
+            <input class="example-qty-input" type="number" value="${item.qty}" min="${f.block.minQty}" step="${f.block.step}" onchange="setExampleQty(${idx},${itemIdx},this)">
+            <span style="font-size:9px;color:var(--slate-400);width:24px">${unitShort(f.block.unit)}</span>
+            <button class="example-qty-btn" onclick="changeExampleQty(${idx},${itemIdx},1)">+</button>
+          </div><div class="example-line-price">${fmt(getBlockPrice(item.blockId) * item.qty)}</div></div>`;
+      }
+    }
+  }
+
+  // Software dropdown + qty
+  bodyHtml += `<div class="example-cat-label" style="color:#6366f1">Software</div>`;
+  bodyHtml += `<div class="example-line" style="flex-wrap:wrap;gap:4px"><div style="flex:1;min-width:140px">
+    <select onchange="changeExampleSw(${idx},this.value)" style="width:100%;padding:4px 6px;border:1px solid var(--slate-200);border-radius:5px;font-family:'Lexend',sans-serif;font-size:10px;font-weight:600;color:var(--slate-700);background:white;cursor:pointer">
+      ${SW_OPTIONS.map(o => `<option value="${o.id}" ${o.id === ex.sw.optionId ? 'selected' : ''}>${o.label}</option>`).join('')}
+    </select></div>`;
+  if (showSwQty) {
+    bodyHtml += `<div class="example-line-edit">
+      <button class="example-qty-btn" onclick="changeExampleSwQty(${idx},-1)">−</button>
+      <input class="example-qty-input" type="number" value="${ex.sw.qty}" style="width:48px" onchange="setExampleSwQty(${idx},this)">
+      <span style="font-size:9px;color:var(--slate-400);width:40px">${swOpt.unit}s</span>
+      <button class="example-qty-btn" onclick="changeExampleSwQty(${idx},1)">+</button>
+    </div>`;
+  }
+  bodyHtml += `<div class="example-line-price">${ex.sw.optionId === 'none' ? '—' : fmt(swTotal)}</div></div>`;
+
+  let footerHtml = `<div class="example-total-row"><span class="example-total-label">Standard Total</span><span class="example-total-value">${fmt(stdTotal)}</span></div>`;
+  if (ex.discountLabel && discount > 0) footerHtml += `<div class="example-total-row"><span class="example-total-label">${ex.discountLabel}</span><span class="example-total-value" style="color:var(--emerald-600)">−${fmt(discount)}</span></div>`;
+  footerHtml += `<div class="example-total-row final"><span class="example-total-label">Pilot Partner Price</span><span class="example-total-value">${fmt(pilotTotal)}</span></div>`;
+  if (ex.renewalLabel) footerHtml += `<div class="example-total-row" style="margin-top:2px"><span class="example-total-label" style="font-size:10px">${ex.renewalLabel}</span><span class="example-total-value" style="font-size:11px;color:var(--slate-500)">${fmt(renewalTotal)}</span></div>`;
+
+  card.innerHTML = `
+    <div class="example-card-header">
+      <h3>${ex.title}</h3>
+      <div class="example-subtitle">${ex.subtitle}</div>
+      <span class="example-badge" style="background:${ex.badgeBg};color:${ex.badgeColor}">${ex.badgeText}</span>
+    </div>
+    <div class="example-card-body">${bodyHtml}</div>
+    <div class="example-card-footer">
+      <div class="example-totals">${footerHtml}</div>
+      <div class="example-actions"><button class="btn-load" onclick="loadExampleIntoBuilder(${idx})">Load into Builder</button></div>
+    </div>`;
+  return card;
+}
+
+function changeExampleQty(exIdx, itemIdx, dir) {
+  const item = examplesState[exIdx].items[itemIdx];
+  const f = getBlock(item.blockId); if (!f) return;
+  const nq = Math.round((item.qty + dir * f.block.step) * 100) / 100;
+  if (nq < f.block.minQty) return;
+  item.qty = nq; renderExamples();
+}
+function setExampleQty(exIdx, itemIdx, el) {
+  const item = examplesState[exIdx].items[itemIdx];
+  const f = getBlock(item.blockId); if (!f) return;
+  let v = parseFloat(el.value);
+  if (isNaN(v) || v < f.block.minQty) v = f.block.minQty;
+  item.qty = Math.round(Math.round(v / f.block.step) * f.block.step * 100) / 100;
+  renderExamples();
+}
+function changeExampleSw(exIdx, optionId) {
+  const opt = getSwOption(optionId);
+  examplesState[exIdx].sw = { optionId, qty: opt.defaultQty };
+  renderExamples();
+}
+function changeExampleSwQty(exIdx, dir) {
+  const sw = examplesState[exIdx].sw;
+  const steps = { 'sw-impact': 1, 'sw-impact-schools': 500 };
+  const mins = { 'sw-impact': 2, 'sw-impact-schools': 1000 };
+  const step = steps[sw.optionId] || 1;
+  const nq = sw.qty + dir * step;
+  if (nq < (mins[sw.optionId] || 1)) return;
+  sw.qty = nq; renderExamples();
+}
+function setExampleSwQty(exIdx, el) {
+  const sw = examplesState[exIdx].sw;
+  const mins = { 'sw-impact': 2, 'sw-impact-schools': 1000 };
+  let v = parseInt(el.value);
+  if (isNaN(v) || v < (mins[sw.optionId] || 1)) v = mins[sw.optionId] || 1;
+  sw.qty = v; renderExamples();
+}
+function loadExampleIntoBuilder(exIdx) {
+  const ex = examplesState[exIdx];
+  bundles = [{ bundleId: 1, name: ex.title, items: [] }];
+  activeBundleId = 1; nextBundleId = 2; nextItemId = 1;
+  document.getElementById('discountVal').value = '';
+  for (const item of ex.items) {
+    const f = getBlock(item.blockId); if (!f) continue;
+    bundles[0].items.push({ itemId: nextItemId++, blockId: item.blockId, catId: f.cat.id, qty: item.qty, discount: 0, discountType: 'pct' });
+  }
+  // Map example software to builder tier
+  const swMap = { 'sw-play': 'play', 'sw-impact': 'impact', 'sw-impact-schools': 'impact-schools', 'none': 'free' };
+  selectedTierId = swMap[ex.sw.optionId] || 'free';
+  if (selectedTierId === 'impact') tierCounts.impact = ex.sw.qty;
+  if (selectedTierId === 'impact-schools') tierCounts.impactSchools = ex.sw.qty;
+  switchTab('builder');
+  renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+  showToast('Loaded: ' + ex.title);
+}
+
+// ─── Events ────────────────────────────────────────────────────────────────────
+document.getElementById('exportDocBtn').addEventListener('click', exportToGoogleDoc);
+document.getElementById('copyBtn').addEventListener('click', copyForProposal);
+document.getElementById('copyMdBtn').addEventListener('click', copyAsMarkdown);
+document.getElementById('clearBtn').addEventListener('click', () => { clearAll(); history.replaceState(null, '', location.pathname); });
+document.getElementById('addBundleBtn').addEventListener('click', addBundle);
+document.getElementById('discountVal').addEventListener('input', renderTotals);
+document.getElementById('discountType').addEventListener('change', renderTotals);
+document.getElementById('currencySelect').addEventListener('change', function() {
+  selectedCurrency = this.value;
+  const cur = getCurrency();
+  const sym = cur.prefix ? cur.symbol.trim() : cur.symbol.trim();
+  document.getElementById('discFlatLabel').textContent = sym;
+  renderBlocks(); renderTierCards(); renderLicenseSummary(); render();
+});
+document.getElementById('partnerName').addEventListener('change', saveToUrl);
+document.getElementById('studentCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
+document.getElementById('educatorCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
+document.getElementById('multiyearToggle').addEventListener('click', () => {
+  const wrap = document.getElementById('multiyearWrap');
+  const btn = document.getElementById('multiyearToggle');
+  const showing = wrap.classList.toggle('show');
+  btn.textContent = showing ? 'Hide 3-year view' : 'Show 3-year view';
+});
+document.querySelectorAll('.header-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// ─── Init ──────────────────────────────────────────────────────────────────────
+const loadedFromUrl = loadFromUrl();
+renderTierCards();
+renderLicenseSummary();
+renderBlocks();
+render();
+fetchLiveRates();
+</script>
+</body>
+</html>
