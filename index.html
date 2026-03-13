@@ -408,9 +408,9 @@
       <table class="pricing-table">
         <thead><tr><th>Tier</th><th>Student Enrollment</th><th>Price/Student/Year</th><th>Monthly Credits</th></tr></thead>
         <tbody>
-          <tr><td>Tier 1</td><td>1–9,999</td><td>$4.00</td><td>2M Tokens</td></tr>
-          <tr><td>Tier 2</td><td>10,000–24,999</td><td>$3.50</td><td>4M Tokens</td></tr>
-          <tr><td>Tier 3</td><td>25,000–49,999</td><td>$3.00</td><td>6M Tokens</td></tr>
+          <tr><td>Tier 1</td><td>1–9,999</td><td>$3.00</td><td>2M Tokens</td></tr>
+          <tr><td>Tier 2</td><td>10,000–24,999</td><td>$2.50</td><td>4M Tokens</td></tr>
+          <tr><td>Tier 3</td><td>25,000–49,999</td><td>$2.00</td><td>6M Tokens</td></tr>
           <tr><td>Tier 4</td><td>50,000+</td><td>Custom</td><td>Custom</td></tr>
         </tbody>
       </table>
@@ -763,9 +763,9 @@ function unitShort(unit) {
 const SOFTWARE_TIERS = [
   { id: 'play', name: 'Play', tagline: '6-month trial for any organization', pricePerUnit: 1500, unitLabel: 'org', unitLabelPlural: 'orgs', minCount: 1, defaultCount: 1, priceNote: '$1,500/6-mo per org', periodLabel: '/6-mo', educators: '100 educators', students: '1,000 students' },
   { id: 'impact', name: 'Impact', tagline: 'For non-school organizations', pricePerUnit: 200, unitLabel: 'user', unitLabelPlural: 'users', minCount: 1, defaultCount: 5 },
-  { id: 'schools-t1', name: 'Schools — Tier 1', tagline: '1–9,999 students', pricePerUnit: 4, unitLabel: 'student', unitLabelPlural: 'students', minCount: 1, defaultCount: 5000, priceNote: '$4.00/student/year', enrollmentRange: '1–9,999', monthlyCredits: '2M Tokens' },
-  { id: 'schools-t2', name: 'Schools — Tier 2', tagline: '10,000–24,999 students', pricePerUnit: 3.50, unitLabel: 'student', unitLabelPlural: 'students', minCount: 10000, defaultCount: 15000, priceNote: '$3.50/student/year', enrollmentRange: '10,000–24,999', monthlyCredits: '4M Tokens' },
-  { id: 'schools-t3', name: 'Schools — Tier 3', tagline: '25,000–49,999 students', pricePerUnit: 3, unitLabel: 'student', unitLabelPlural: 'students', minCount: 25000, defaultCount: 35000, priceNote: '$3.00/student/year', enrollmentRange: '25,000–49,999', monthlyCredits: '6M Tokens' },
+  { id: 'schools-t1', name: 'Schools — Tier 1', tagline: '1–9,999 students', pricePerUnit: 3, unitLabel: 'student', unitLabelPlural: 'students', minCount: 1, defaultCount: 5000, priceNote: '$3.00/student/year', enrollmentRange: '1–9,999', monthlyCredits: '2M Tokens' },
+  { id: 'schools-t2', name: 'Schools — Tier 2', tagline: '10,000–24,999 students', pricePerUnit: 2.50, unitLabel: 'student', unitLabelPlural: 'students', minCount: 10000, defaultCount: 15000, priceNote: '$2.50/student/year', enrollmentRange: '10,000–24,999', monthlyCredits: '4M Tokens' },
+  { id: 'schools-t3', name: 'Schools — Tier 3', tagline: '25,000–49,999 students', pricePerUnit: 2, unitLabel: 'student', unitLabelPlural: 'students', minCount: 25000, defaultCount: 35000, priceNote: '$2.00/student/year', enrollmentRange: '25,000–49,999', monthlyCredits: '6M Tokens' },
   { id: 'schools-t4', name: 'Schools — Tier 4', tagline: '50,000+ students', pricePerUnit: 0, unitLabel: 'student', unitLabelPlural: 'students', minCount: 50000, defaultCount: 50000, priceNote: 'Custom pricing', enrollmentRange: '50,000+', monthlyCredits: 'Custom', isCustom: true }
 ];
 
