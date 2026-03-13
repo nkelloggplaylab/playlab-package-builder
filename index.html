@@ -168,8 +168,21 @@
     .sw-add-btn:hover { background: var(--violet-600); }
 
     /* Right: Quote Panel */
-    .quote-col { background: white; position: sticky; top: 53px; height: calc(100vh - 53px); align-self: start; }
-    .quote-col-inner { height: 100%; overflow-y: scroll; padding: 20px 20px 28px; box-sizing: border-box; }
+    .quote-col { background: white; position: sticky; top: 53px; height: calc(100vh - 53px); align-self: start; display: flex; flex-direction: column; }
+    .quote-col-inner { flex: 1; overflow-y: scroll; padding: 20px 20px 28px; box-sizing: border-box; }
+
+    /* Quote Tabs */
+    .quote-tabs { display: flex; align-items: stretch; background: var(--slate-50); border-bottom: 1.5px solid var(--slate-200); flex-shrink: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+    .quote-tabs::-webkit-scrollbar { height: 3px; }
+    .quote-tabs::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 2px; }
+    .quote-tab { display: flex; align-items: center; gap: 5px; padding: 7px 10px 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 500; color: var(--slate-500); background: var(--slate-100); border: none; border-right: 1px solid var(--slate-200); cursor: pointer; white-space: nowrap; transition: all 0.12s; max-width: 160px; flex-shrink: 0; border-top: 2px solid transparent; }
+    .quote-tab:hover { background: var(--slate-50); color: var(--slate-700); }
+    .quote-tab.active { background: white; color: var(--slate-800); font-weight: 600; border-top-color: var(--sky-500); border-bottom: 1.5px solid white; margin-bottom: -1.5px; }
+    .quote-tab-name { overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+    .quote-tab-close { width: 14px; height: 14px; border: none; background: none; color: var(--slate-400); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 3px; line-height: 1; flex-shrink: 0; transition: all 0.1s; }
+    .quote-tab-close:hover { color: var(--rose-500); background: var(--rose-50); }
+    .quote-tab-new { display: flex; align-items: center; gap: 3px; padding: 7px 12px 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--sky-500); background: none; border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s; }
+    .quote-tab-new:hover { color: var(--sky-600); background: var(--sky-50); }
     .quote-col-inner > * + * { margin-top: 14px; }
     .q-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--slate-400); margin-bottom: 6px; }
     .partner-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--slate-200); border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 500; color: var(--slate-800); transition: border-color 0.15s; }
@@ -366,8 +379,8 @@
 </header>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('builder')">Builder</button>
-  <button class="tab-btn" onclick="switchTab('pricing')">Pricing Reference</button>
+  <button class="tab-btn active" onclick="switchMainTab('builder')">Builder</button>
+  <button class="tab-btn" onclick="switchMainTab('pricing')">Pricing Reference</button>
 </div>
 
 <div class="pricing-view" id="pricingView" style="display:none">
@@ -476,6 +489,7 @@
 
   <!-- RIGHT: Package Builder -->
   <div class="quote-col">
+  <div class="quote-tabs" id="quoteTabBar"></div>
   <div class="quote-col-inner">
     <div style="font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:4px">Package Builder</div>
 
@@ -1912,10 +1926,13 @@ function renderInsights() {
 }
 
 // ─── Clear All ──────────────────────────────────────────────────────────────────
-function clearAll() {
+function resetBuilderState() {
   quotePackages = [];
   quoteAddons = [];
   quoteLicenses = [];
+  nextPkgId = 1;
+  nextAddonId = 1;
+  nextLicenseId = 1;
   expandedPkgId = null;
   activeConfigPkgId = null;
   configState = {};
@@ -1929,8 +1946,13 @@ function clearAll() {
   document.getElementById('partnerName').value = '';
   document.getElementById('studentCount').value = '';
   document.getElementById('educatorCount').value = '';
+}
+
+function clearAll() {
+  resetBuilderState();
   renderAll();
-  history.replaceState(null, '', location.pathname);
+  saveToUrl();
+  renderTabBar();
 }
 
 // ─── Rate Editor ──────────────────────────────────────────────────────────────
@@ -1968,7 +1990,7 @@ function showToast(msg) {
 }
 
 // ─── Tab Switching ──────────────────────────────────────────────────────────
-function switchTab(tab) {
+function switchMainTab(tab) {
   const btns = document.querySelectorAll('.tab-btn');
   btns.forEach(b => b.classList.remove('active'));
   if (tab === 'builder') {
@@ -1993,8 +2015,8 @@ function renderAll() {
 }
 
 // ─── URL State ─────────────────────────────────────────────────────────────────
-function saveToUrl() {
-  const state = {
+function getTabState() {
+  return {
     v: 3,
     partner: document.getElementById('partnerName').value,
     currency: selectedCurrency,
@@ -2018,10 +2040,15 @@ function saveToUrl() {
     })),
     addons: quoteAddons.map(a => ({ blockId: a.blockId, qty: a.qty }))
   };
+}
+
+function saveToUrl() {
+  const state = getTabState();
   try {
     const hash = btoa(JSON.stringify(state));
     history.replaceState(null, '', '#' + hash);
   } catch {}
+  saveActiveTab();
 }
 
 function loadFromUrl() {
@@ -2467,6 +2494,7 @@ document.getElementById('discountVal').addEventListener('input', renderTotals);
 document.getElementById('discountType').addEventListener('change', renderTotals);
 document.getElementById('discountName').addEventListener('change', saveToUrl);
 document.getElementById('partnerName').addEventListener('change', saveToUrl);
+document.getElementById('partnerName').addEventListener('input', renderTabBar);
 document.getElementById('studentCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
 document.getElementById('educatorCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
 document.getElementById('currencySelect').addEventListener('change', function() {
@@ -2477,9 +2505,254 @@ document.getElementById('currencySelect').addEventListener('change', function() 
   renderAll();
 });
 
+// ─── Tab Management ──────────────────────────────────────────────────────────
+let builderTabs = [];
+let activeTabId = null;
+
+function generateTabId() {
+  return 'tab_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function loadTabState(state) {
+  resetBuilderState();
+  if (!state) { renderAll(); return; }
+  if (state.partner) document.getElementById('partnerName').value = state.partner;
+  if (state.currency && CURRENCIES[state.currency]) selectedCurrency = state.currency;
+  if (state.rates) {
+    rates = { ...DEFAULT_RATES, ...state.rates };
+    document.getElementById('rateLp').value = rates.lp;
+    document.getElementById('rateDev').value = rates.dev;
+    document.getElementById('rateTravel').value = rates.travel;
+    updateRateStatus();
+  }
+  if (state.discountVal) document.getElementById('discountVal').value = state.discountVal;
+  if (state.discountType) document.getElementById('discountType').value = state.discountType;
+  if (state.discountName) document.getElementById('discountName').value = state.discountName;
+  if (state.students) document.getElementById('studentCount').value = state.students;
+  if (state.educators) document.getElementById('educatorCount').value = state.educators;
+
+  if (state.licenses) {
+    for (const sl of state.licenses) {
+      const tier = SOFTWARE_TIERS.find(t => t.id === sl.tierId);
+      if (!tier) continue;
+      quoteLicenses.push({ licenseId: nextLicenseId++, tierId: sl.tierId, count: sl.count || tier.defaultCount });
+    }
+  }
+  if (!state.licenses && state.tier) {
+    const tierId = state.tier;
+    const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
+    if (tier) {
+      const count = state.tierCounts?.[tierId] || tier.defaultCount;
+      quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count });
+    }
+  }
+
+  if (state.packages) {
+    for (const sp of state.packages) {
+      const pkg = PACKAGES.find(p => p.id === sp.packageId);
+      if (!pkg) continue;
+      let compId = 1;
+      const components = pkg.components.map(c => ({ ...c, id: 'c' + compId++ }));
+      if (sp.components) {
+        for (const sc of sp.components) {
+          const comp = components.find(c => c.id === sc.id);
+          if (comp) comp.qty = sc.qty;
+        }
+      }
+      const participants = sp.participants || 30;
+      const hasFac = pkg.facilitationHours && pkg.facilitationHours > 0;
+      let sessions;
+      if (sp.sessions && Array.isArray(sp.sessions)) {
+        sessions = sp.sessions.map(s => ({ hours: s.hours || 0, delivery: s.delivery || 'virtual' }));
+      } else {
+        const sessionCount = sp.sessionCount || 1;
+        const sessionDuration = sp.sessionDuration || (hasFac ? pkg.facilitationHours : 0);
+        const delivery = sp.deliveryMode || 'virtual';
+        sessions = [];
+        for (let si = 0; si < sessionCount; si++) {
+          sessions.push({ hours: sessionDuration, delivery });
+        }
+      }
+      const qpkg = {
+        pkgId: nextPkgId++,
+        packageId: sp.packageId,
+        customName: sp.customName || null,
+        participants,
+        facilitators: Math.max(1, Math.ceil(participants / 30)),
+        sessions,
+        travelLocalDays: sp.travelLocalDays ?? getDefaultTravelCounts(sessions).localDays,
+        travelFlightTrips: sp.travelFlightTrips ?? getDefaultTravelCounts(sessions).flightTrips,
+        launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : (hasFac ? 1 : 0),
+        officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
+        components
+      };
+      quotePackages.push(qpkg);
+    }
+    if (quotePackages.length > 0) expandedPkgId = quotePackages[0].pkgId;
+  }
+
+  if (state.addons) {
+    for (const sa of state.addons) {
+      const def = ADDONS.find(a => a.blockId === sa.blockId);
+      if (!def) continue;
+      quoteAddons.push({
+        addonId: nextAddonId++,
+        blockId: def.blockId,
+        label: def.label,
+        unit: def.unit,
+        qty: sa.qty || def.defaultQty,
+        minQty: def.minQty,
+        step: def.step
+      });
+    }
+  }
+
+  document.getElementById('currencySelect').value = selectedCurrency;
+  renderAll();
+}
+
+function saveActiveTab() {
+  if (!activeTabId) return;
+  const tab = builderTabs.find(t => t.id === activeTabId);
+  if (!tab) return;
+  tab.state = getTabState();
+  tab.name = document.getElementById('partnerName').value || 'New Quote';
+  try {
+    localStorage.setItem('playlab_builder_tabs', JSON.stringify(builderTabs));
+    localStorage.setItem('playlab_builder_activeTabId', activeTabId);
+  } catch {}
+}
+
+function switchQuoteTab(tabId) {
+  if (tabId === activeTabId) return;
+  saveActiveTab();
+  activeTabId = tabId;
+  const tab = builderTabs.find(t => t.id === tabId);
+  if (tab) {
+    loadTabState(tab.state);
+  }
+  try {
+    localStorage.setItem('playlab_builder_activeTabId', activeTabId);
+  } catch {}
+  renderTabBar();
+  // Update URL hash for the newly active tab
+  const state = getTabState();
+  try {
+    const hash = btoa(JSON.stringify(state));
+    history.replaceState(null, '', '#' + hash);
+  } catch {}
+}
+
+function createNewTab() {
+  saveActiveTab();
+  const newTab = { id: generateTabId(), name: 'New Quote', state: null };
+  builderTabs.push(newTab);
+  activeTabId = newTab.id;
+  resetBuilderState();
+  renderAll();
+  try {
+    localStorage.setItem('playlab_builder_tabs', JSON.stringify(builderTabs));
+    localStorage.setItem('playlab_builder_activeTabId', activeTabId);
+  } catch {}
+  renderTabBar();
+  history.replaceState(null, '', location.pathname);
+}
+
+function deleteTab(tabId) {
+  const tab = builderTabs.find(t => t.id === tabId);
+  if (!tab) return;
+  // Check if tab has content
+  const hasContent = tab.state && (
+    (tab.state.packages && tab.state.packages.length > 0) ||
+    (tab.state.addons && tab.state.addons.length > 0) ||
+    (tab.state.licenses && tab.state.licenses.length > 0) ||
+    (tab.state.partner && tab.state.partner.trim())
+  );
+  if (hasContent && !confirm('Delete tab "' + tab.name + '"? This cannot be undone.')) return;
+
+  const idx = builderTabs.findIndex(t => t.id === tabId);
+  builderTabs.splice(idx, 1);
+
+  if (builderTabs.length === 0) {
+    // Always keep at least one tab
+    const newTab = { id: generateTabId(), name: 'New Quote', state: null };
+    builderTabs.push(newTab);
+    activeTabId = newTab.id;
+    resetBuilderState();
+    renderAll();
+  } else if (activeTabId === tabId) {
+    // Switch to nearest tab
+    const newIdx = Math.min(idx, builderTabs.length - 1);
+    activeTabId = builderTabs[newIdx].id;
+    loadTabState(builderTabs[newIdx].state);
+  }
+
+  try {
+    localStorage.setItem('playlab_builder_tabs', JSON.stringify(builderTabs));
+    localStorage.setItem('playlab_builder_activeTabId', activeTabId);
+  } catch {}
+  renderTabBar();
+}
+
+function renderTabBar() {
+  const bar = document.getElementById('quoteTabBar');
+  if (!bar) return;
+  // Update the active tab name from current partner input (live)
+  const currentName = document.getElementById('partnerName').value || 'New Quote';
+  const activeTab = builderTabs.find(t => t.id === activeTabId);
+  if (activeTab) activeTab.name = currentName;
+
+  let html = '';
+  for (const tab of builderTabs) {
+    const isActive = tab.id === activeTabId;
+    const displayName = tab.name || 'New Quote';
+    html += '<button class="quote-tab' + (isActive ? ' active' : '') + '" onclick="switchQuoteTab(\'' + tab.id + '\')" title="' + displayName.replace(/"/g, '&quot;') + '">';
+    html += '<span class="quote-tab-name">' + displayName.replace(/</g, '&lt;') + '</span>';
+    html += '<span class="quote-tab-close" onclick="event.stopPropagation(); deleteTab(\'' + tab.id + '\')">&times;</span>';
+    html += '</button>';
+  }
+  html += '<button class="quote-tab-new" onclick="createNewTab()">+ New</button>';
+  bar.innerHTML = html;
+}
+
+function initTabs() {
+  try {
+    const saved = localStorage.getItem('playlab_builder_tabs');
+    const savedActiveId = localStorage.getItem('playlab_builder_activeTabId');
+    if (saved) {
+      builderTabs = JSON.parse(saved);
+      if (builderTabs.length > 0) {
+        activeTabId = (savedActiveId && builderTabs.find(t => t.id === savedActiveId)) ? savedActiveId : builderTabs[0].id;
+      }
+    }
+  } catch {}
+
+  if (builderTabs.length === 0) {
+    const newTab = { id: generateTabId(), name: 'New Quote', state: null };
+    builderTabs.push(newTab);
+    activeTabId = newTab.id;
+  }
+
+  renderTabBar();
+}
+
 // ─── Init ──────────────────────────────────────────────────────────────────────
-loadFromUrl();
-renderAll();
+initTabs();
+const urlLoaded = loadFromUrl();
+if (urlLoaded) {
+  // URL hash takes priority — load into the active tab
+  saveActiveTab();
+  renderTabBar();
+} else {
+  // No URL hash — load from the active tab's saved state
+  const activeTab = builderTabs.find(t => t.id === activeTabId);
+  if (activeTab && activeTab.state) {
+    loadTabState(activeTab.state);
+    renderTabBar();
+  } else {
+    renderAll();
+  }
+}
 fetchLiveRates();
 </script>
 </body>
