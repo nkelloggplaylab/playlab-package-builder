@@ -153,7 +153,7 @@
 
     /* Software License Cards */
     .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-    .sw-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 11px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .sw-card { background: white; border: 1.5px solid var(--slate-200); border-radius: 11px; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.15s, box-shadow 0.15s; height: 100%; }
     .sw-card:hover { border-color: var(--violet-500); box-shadow: 0 2px 8px rgba(139,92,246,.08); }
     .sw-card-name { font-size: 13px; font-weight: 700; color: var(--slate-800); }
     .sw-card-tagline { font-size: 10.5px; color: var(--slate-500); line-height: 1.35; }
@@ -164,7 +164,7 @@
     .sw-count-input::-webkit-inner-spin-button, .sw-count-input::-webkit-outer-spin-button { -webkit-appearance: none; }
     .sw-count-input:focus { outline: none; border-color: var(--violet-500); }
     .sw-card-computed { font-size: 10px; font-weight: 700; color: var(--emerald-600); margin-left: auto; }
-    .sw-add-btn { margin-top: 6px; padding: 7px 0; width: 100%; background: var(--violet-500); color: white; border: none; border-radius: 8px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .sw-add-btn { margin-top: auto; padding: 7px 0; width: 100%; background: var(--violet-500); color: white; border: none; border-radius: 8px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .sw-add-btn:hover { background: var(--violet-600); }
 
     /* Right: Quote Panel */
