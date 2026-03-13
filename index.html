@@ -762,11 +762,18 @@ function unitShort(unit) {
 const SOFTWARE_TIERS = [
   { id: 'play', name: 'Play', tagline: '6-month trial for any organization', pricePerUnit: 1500, unitLabel: 'org', unitLabelPlural: 'orgs', minCount: 1, defaultCount: 1, priceNote: '$1,500/6-mo per org', periodLabel: '/6-mo', educators: '100 educators', students: '1,000 students' },
   { id: 'impact', name: 'Impact', tagline: 'For non-school organizations', pricePerUnit: 200, unitLabel: 'user', unitLabelPlural: 'users', minCount: 1, defaultCount: 5 },
-  { id: 'schools-t1', name: 'Schools — Tier 1', tagline: '1–9,999 students', pricePerUnit: 3, unitLabel: 'student', unitLabelPlural: 'students', minCount: 1, defaultCount: 5000, priceNote: '$3.00/student/year', enrollmentRange: '1–9,999', monthlyCredits: '2M Tokens' },
-  { id: 'schools-t2', name: 'Schools — Tier 2', tagline: '10,000–24,999 students', pricePerUnit: 2.50, unitLabel: 'student', unitLabelPlural: 'students', minCount: 10000, defaultCount: 15000, priceNote: '$2.50/student/year', enrollmentRange: '10,000–24,999', monthlyCredits: '4M Tokens' },
-  { id: 'schools-t3', name: 'Schools — Tier 3', tagline: '25,000–49,999 students', pricePerUnit: 2, unitLabel: 'student', unitLabelPlural: 'students', minCount: 25000, defaultCount: 35000, priceNote: '$2.00/student/year', enrollmentRange: '25,000–49,999', monthlyCredits: '6M Tokens' },
-  { id: 'schools-t4', name: 'Schools — Tier 4', tagline: '50,000+ students', pricePerUnit: 0, unitLabel: 'student', unitLabelPlural: 'students', minCount: 50000, defaultCount: 50000, priceNote: 'Custom pricing', enrollmentRange: '50,000+', monthlyCredits: 'Custom', isCustom: true }
+  { id: 'schools-t1', name: 'Schools — Tier 1', tagline: '1–9,999 students', pricePerUnit: 3, unitLabel: 'student', unitLabelPlural: 'students', minCount: 1, defaultCount: 5000, priceNote: '$3.00/student/year', enrollmentRange: '1–9,999', monthlyCredits: '2M Tokens', isSchool: true },
+  { id: 'schools-t2', name: 'Schools — Tier 2', tagline: '10,000–24,999 students', pricePerUnit: 2.50, unitLabel: 'student', unitLabelPlural: 'students', minCount: 10000, defaultCount: 15000, priceNote: '$2.50/student/year', enrollmentRange: '10,000–24,999', monthlyCredits: '4M Tokens', isSchool: true },
+  { id: 'schools-t3', name: 'Schools — Tier 3', tagline: '25,000–49,999 students', pricePerUnit: 2, unitLabel: 'student', unitLabelPlural: 'students', minCount: 25000, defaultCount: 35000, priceNote: '$2.00/student/year', enrollmentRange: '25,000–49,999', monthlyCredits: '6M Tokens', isSchool: true },
+  { id: 'schools-t4', name: 'Schools — Tier 4', tagline: '50,000+ students', pricePerUnit: 0, unitLabel: 'student', unitLabelPlural: 'students', minCount: 50000, defaultCount: 50000, priceNote: 'Custom pricing', enrollmentRange: '50,000+', monthlyCredits: 'Custom', isCustom: true, isSchool: true }
 ];
+
+function getSchoolTierForEnrollment(count) {
+  if (count >= 50000) return SOFTWARE_TIERS.find(t => t.id === 'schools-t4');
+  if (count >= 25000) return SOFTWARE_TIERS.find(t => t.id === 'schools-t3');
+  if (count >= 10000) return SOFTWARE_TIERS.find(t => t.id === 'schools-t2');
+  return SOFTWARE_TIERS.find(t => t.id === 'schools-t1');
+}
 
 // Software licenses in quote (multiple allowed)
 let quoteLicenses = [];
@@ -1606,25 +1613,25 @@ function setAddonQty(addonId, input) {
 function renderSwCards() {
   const grid = document.getElementById('swGrid');
   grid.innerHTML = '';
-  for (const tier of SOFTWARE_TIERS) {
+
+  // Non-school tiers (Play, Impact)
+  for (const tier of SOFTWARE_TIERS.filter(t => !t.isSchool)) {
     const card = document.createElement('div');
     card.className = 'sw-card';
     card.id = 'sw-' + tier.id;
     const defaultCount = tier.defaultCount;
     const cost = tier.pricePerUnit * defaultCount;
     const priceLabel = tier.priceNote || `$${tier.pricePerUnit}/${tier.unitLabel}/year`;
-    const countLabel = tier.unitLabel === 'user' ? 'Users' : tier.unitLabel === 'student' ? 'Students' : 'Qty';
+    const countLabel = tier.unitLabel === 'user' ? 'Users' : 'Qty';
     const period = tier.periodLabel || '/yr';
     const computedText = tier.isCustom ? 'Custom' : `${fmt(cost)}${period}`;
     const countRow = `<div class="sw-card-row">
         <label>${countLabel}:</label>
-        <input class="sw-count-input" type="number" min="${tier.minCount}" value="${defaultCount}" id="sw-input-${tier.id}"
-               ${tier.minCount >= 1000 ? 'step="100"' : ''}>
+        <input class="sw-count-input" type="number" min="${tier.minCount}" value="${defaultCount}" id="sw-input-${tier.id}">
         <span class="sw-card-computed">${computedText}</span>
       </div>`;
     let metaRow = '';
     if (tier.educators) metaRow = `<div style="font-size:10px;color:var(--slate-400);margin-top:2px">${tier.educators} · ${tier.students}</div>`;
-    if (tier.monthlyCredits) metaRow = `<div style="font-size:10px;color:var(--slate-400);margin-top:2px">${tier.enrollmentRange} enrollment · ${tier.monthlyCredits}</div>`;
     card.innerHTML = `
       <div class="sw-card-name">${tier.name}</div>
       <div class="sw-card-tagline">${tier.tagline}</div>
@@ -1634,7 +1641,6 @@ function renderSwCards() {
       <button class="sw-add-btn" onclick="addLicenseFromCard('${tier.id}')">+ Add License</button>`;
     grid.appendChild(card);
 
-    // Add input listener for computed price
     const input = card.querySelector('.sw-count-input');
     const computed = card.querySelector('.sw-card-computed');
     input.addEventListener('input', () => {
@@ -1642,6 +1648,48 @@ function renderSwCards() {
       computed.textContent = tier.isCustom ? 'Custom' : fmt(tier.pricePerUnit * v) + (tier.periodLabel || '/yr');
     });
   }
+
+  // Unified Schools card
+  const schoolCard = document.createElement('div');
+  schoolCard.className = 'sw-card';
+  schoolCard.id = 'sw-schools';
+  const defaultEnrollment = 5000;
+  const defaultTier = getSchoolTierForEnrollment(defaultEnrollment);
+  schoolCard.innerHTML = `
+    <div class="sw-card-name">Schools</div>
+    <div class="sw-card-tagline">Enrollment-based pricing for K–12</div>
+    <div class="sw-card-price" id="schools-price-badge">${defaultTier.priceNote}</div>
+    <div id="schools-tier-detail" style="font-size:10px;color:var(--slate-400);margin-top:2px">${defaultTier.name} · ${defaultTier.monthlyCredits}</div>
+    <div class="sw-card-row">
+      <label>Students:</label>
+      <input class="sw-count-input" type="number" min="1" value="${defaultEnrollment}" id="sw-input-schools" step="100">
+      <span class="sw-card-computed" id="schools-computed">${fmt(defaultTier.pricePerUnit * defaultEnrollment)}/yr</span>
+    </div>
+    <div id="schools-tier-table" style="margin-top:6px;font-size:9.5px;color:var(--slate-400);line-height:1.6">
+      <div style="display:flex;justify-content:space-between"><span>1–9,999</span><span>$3.00/student</span></div>
+      <div style="display:flex;justify-content:space-between"><span>10,000–24,999</span><span>$2.50/student</span></div>
+      <div style="display:flex;justify-content:space-between"><span>25,000–49,999</span><span>$2.00/student</span></div>
+      <div style="display:flex;justify-content:space-between"><span>50,000+</span><span>Custom</span></div>
+    </div>
+    <button class="sw-add-btn" onclick="addSchoolLicense()">+ Add License</button>`;
+  grid.appendChild(schoolCard);
+
+  const schoolInput = schoolCard.querySelector('#sw-input-schools');
+  schoolInput.addEventListener('input', () => {
+    const v = parseInt(schoolInput.value) || 1;
+    const tier = getSchoolTierForEnrollment(v);
+    document.getElementById('schools-price-badge').textContent = tier.priceNote;
+    document.getElementById('schools-tier-detail').textContent = tier.name + ' · ' + tier.monthlyCredits;
+    document.getElementById('schools-computed').textContent = tier.isCustom ? 'Custom' : fmt(tier.pricePerUnit * v) + '/yr';
+  });
+}
+
+function addSchoolLicense() {
+  const input = document.getElementById('sw-input-schools');
+  let count = parseInt(input.value) || 5000;
+  if (count < 1) count = 1;
+  const tier = getSchoolTierForEnrollment(count);
+  addLicense(tier.id, count);
 }
 
 function addLicenseFromCard(tierId) {
