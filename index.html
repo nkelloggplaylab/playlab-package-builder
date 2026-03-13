@@ -1334,7 +1334,13 @@ function updateConfigParticipants(pkgId, input) {
   let val = parseInt(input.value);
   if (isNaN(val) || val < 1) val = 1;
   cs.participants = val;
+  const hadFocus = document.activeElement === input;
   rerenderConfigOnly(pkgId);
+  if (hadFocus) {
+    const card = document.getElementById('pkgcard-' + pkgId);
+    const newInput = card?.querySelector('.config-participants');
+    if (newInput) { newInput.focus(); newInput.select(); }
+  }
 }
 
 function confirmAddPackage(pkgId) {
@@ -1403,8 +1409,14 @@ function setParticipants(pkgId, input) {
   if (isNaN(val) || val < 1) val = 1;
   qpkg.participants = val;
   qpkg.facilitators = Math.max(1, Math.ceil(val / 30));
+  const hadFocus = document.activeElement === input;
   renderQuote();
   renderTotals();
+  if (hadFocus) {
+    const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
+    const newInput = card?.querySelector('.participants-input');
+    if (newInput) { newInput.focus(); newInput.select(); }
+  }
 }
 
 function updateQuoteSessionHours(pkgId, idx, input) {
@@ -1413,8 +1425,14 @@ function updateQuoteSessionHours(pkgId, idx, input) {
   let val = parseFloat(input.value);
   if (isNaN(val) || val < 0.5) val = 0.5;
   qpkg.sessions[idx].hours = Math.round(val * 2) / 2;
+  const hadFocus = document.activeElement === input;
   renderQuote();
   renderTotals();
+  if (hadFocus) {
+    const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
+    const inputs = card?.querySelectorAll('.builder-session-hours');
+    if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+  }
 }
 
 function updateQuoteSessionDelivery(pkgId, idx, mode) {
@@ -1684,6 +1702,7 @@ function buildQuotePkg(qpkg) {
 
   const div = document.createElement('div');
   div.className = 'qpkg' + (isExpanded ? ' expanded' : '');
+  div.dataset.pkgId = qpkg.pkgId;
 
   let bodyHtml = '';
 
