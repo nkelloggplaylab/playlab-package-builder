@@ -1037,7 +1037,8 @@ function buildInlineConfig(pkg) {
     sessionsHtml = `<div class="pkg-config-row">
       <span class="pkg-config-label">Sessions</span>
       <input class="num-sessions-input" type="number" min="1" max="${maxSessions}" value="${numSessions}"
-             onchange="updateConfigNumSessions('${pkg.id}', this)">
+             onchange="updateConfigNumSessions('${pkg.id}', this)"
+             oninput="updateConfigNumSessions('${pkg.id}', this)">
       <span style="font-size:10px;color:var(--slate-400)">session${numSessions > 1 ? 's' : ''} (${pkg.facilitationHours} hrs total)</span>
     </div>
     <div class="session-config-rows">
@@ -1189,7 +1190,14 @@ function updateConfigNumSessions(pkgId, input) {
     if (i < oldSessions.length) newSessions[i].delivery = oldSessions[i].delivery;
   }
   cs.sessions = newSessions;
+  // Re-render config but restore focus to the sessions input
+  const hadFocus = document.activeElement === input;
   rerenderConfigOnly(pkgId);
+  if (hadFocus) {
+    const card = document.getElementById('pkgcard-' + pkgId);
+    const newInput = card?.querySelector('.num-sessions-input');
+    if (newInput) { newInput.focus(); newInput.select(); }
+  }
 }
 
 function updateConfigSessionHours(pkgId, idx, input) {
@@ -1198,7 +1206,13 @@ function updateConfigSessionHours(pkgId, idx, input) {
   if (isNaN(val) || val < 0.5) val = 0.5;
   val = Math.round(val * 2) / 2;
   cs.sessions[idx].hours = val;
+  const hadFocus = document.activeElement === input;
   rerenderConfigOnly(pkgId);
+  if (hadFocus) {
+    const card = document.getElementById('pkgcard-' + pkgId);
+    const inputs = card?.querySelectorAll('.session-hours-input');
+    if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+  }
 }
 
 function updateConfigSessionDelivery(pkgId, idx, mode) {
