@@ -342,7 +342,7 @@
     .tab-btn:hover { color: var(--slate-700); }
     .tab-btn.active { color: var(--sky-600); border-bottom-color: var(--sky-500); }
 
-    /* Pricing Reference */
+    /* Pricing Sheet */
     .pricing-view { background: var(--slate-50); min-height: calc(100vh - 95px); }
     .pricing-table { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--slate-200); border-radius: 10px; overflow: hidden; margin-bottom: 20px; font-size: 12px; }
     .pricing-table th { background: var(--slate-100); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-600); border-bottom: 1px solid var(--slate-200); }
@@ -383,7 +383,7 @@
 
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchMainTab('builder')">Builder</button>
-  <button class="tab-btn" onclick="switchMainTab('pricing')">Pricing Reference</button>
+  <button class="tab-btn" onclick="switchMainTab('pricing')">Pricing Sheet</button>
 </div>
 
 <div class="pricing-view" id="pricingView" style="display:none">
@@ -418,41 +418,40 @@
 
     <h2 style="font-size:18px;font-weight:700;color:var(--slate-800);margin-bottom:20px">Building Blocks</h2>
     <table class="pricing-table">
-      <thead><tr><th>Building Block</th><th>Cost</th><th>Unit</th></tr></thead>
+      <thead><tr><th>Building Block</th><th>Cost</th><th>Unit</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr class="section-header"><td colspan="3">Base Rates</td></tr>
-        <tr><td>Learning Partner Hourly Rate</td><td>$250</td><td></td></tr>
-        <tr><td>Learning Engineer Hourly Rate</td><td>$200</td><td></td></tr>
-        <tr><td>Travel Hourly Rate</td><td>$125</td><td></td></tr>
-        <tr class="section-header"><td colspan="3">Learning Partner Blocks</td></tr>
-        <tr><td>Office Hours</td><td>$300</td><td>hour</td></tr>
-        <tr><td>Coaching</td><td>$450</td><td>hour</td></tr>
-        <tr><td>Admin Meetings</td><td>$450</td><td>hour</td></tr>
-        <tr><td>Facilitation</td><td>$600</td><td>hour</td></tr>
-        <tr class="section-header"><td colspan="3">Developer Blocks</td></tr>
-        <tr><td>Dev Hourly Rate</td><td>$200</td><td>hour</td></tr>
-        <tr><td>App Support — Light</td><td>$1,000</td><td>month</td></tr>
-        <tr><td>App Support — Medium</td><td>$2,000</td><td>month</td></tr>
-        <tr><td>App Support — Full</td><td>$4,000</td><td>month</td></tr>
-        <tr class="section-header"><td colspan="3">Travel Blocks</td></tr>
-        <tr><td>Travel — Local</td><td>$250</td><td>day minimum</td></tr>
-        <tr><td>Travel — Flight</td><td>$2,000</td><td>trip minimum</td></tr>
-        <tr><td>Travel — Additional Day</td><td>$600</td><td>day minimum</td></tr>
-        <tr><td>Site Visit — Half Day</td><td>$1,500</td><td>half day</td></tr>
-        <tr><td>Site Visit — Full Day</td><td>$2,500</td><td>full day</td></tr>
-        <tr class="section-header"><td colspan="3">Targeted AI Blocks</td></tr>
-        <tr><td>AI Agency Crash Course</td><td>$2,300</td><td></td></tr>
-        <tr><td>Ideation — w/LP only</td><td>$2,500</td><td></td></tr>
-        <tr><td>Ideation — w/LP &amp; LE</td><td>$4,000</td><td></td></tr>
-        <tr><td>Tool Build — Initial</td><td>$5,000</td><td></td></tr>
-        <tr><td>Tool Build — Additional</td><td>$2,500</td><td></td></tr>
-        <tr><td>Tool Pilot</td><td>$6,500</td><td></td></tr>
-        <tr><td>Tool Revision — Light</td><td>$1,500</td><td>monthly</td></tr>
-        <tr><td>Tool Revision — Medium</td><td>$2,800</td><td>monthly</td></tr>
-        <tr><td>Tool Revision — Full</td><td>$5,000</td><td>monthly</td></tr>
-        <tr class="section-header"><td colspan="3">Other</td></tr>
-        <tr><td>AI Usage Costs</td><td>$300</td><td>monthly</td></tr>
-        <tr><td>Knowledge Graph</td><td>$1,500</td><td>per curricula</td></tr>
+        <tr class="section-header"><td colspan="4">Base Rates</td></tr>
+        <tr><td>Learning Partner Hourly Rate</td><td>$250</td><td></td><td></td></tr>
+        <tr><td>Learning Engineer Hourly Rate</td><td>$200</td><td></td><td></td></tr>
+        <tr><td>Travel Hourly Rate</td><td>$125</td><td></td><td></td></tr>
+        <tr class="section-header"><td colspan="4">Learning Partner Blocks</td></tr>
+        <tr><td>Office Hours</td><td>$300</td><td>hour</td><td>Starting at 30 min</td></tr>
+        <tr><td>Admin Meetings</td><td>$450</td><td>hour</td><td>Starting at 30 min</td></tr>
+        <tr><td>Facilitation</td><td>$600</td><td>hour</td><td>Starting at 1.5 hrs; up to 50 participants</td></tr>
+        <tr class="section-header"><td colspan="4">Developer Blocks</td></tr>
+        <tr><td>Dev Hourly Rate</td><td>$200</td><td>hour</td><td></td></tr>
+        <tr><td>App Support — Light</td><td>$1,000</td><td>month</td><td>5 hrs support/month</td></tr>
+        <tr><td>App Support — Medium</td><td>$2,000</td><td>month</td><td>10 hrs support/month</td></tr>
+        <tr><td>App Support — Full</td><td>$4,000</td><td>month</td><td>20 hrs support/month</td></tr>
+        <tr class="section-header"><td colspan="4">Travel Blocks</td></tr>
+        <tr><td>Travel — Local</td><td>$250</td><td>day minimum</td><td>Mileage + per diem; add hotel as needed</td></tr>
+        <tr><td>Travel — Flight</td><td>$2,000</td><td>trip minimum</td><td>8 hrs travel + flight + ground + per diem</td></tr>
+        <tr><td>Travel — Additional Day</td><td>$600</td><td>day minimum</td><td>Hotel + ground + per diem</td></tr>
+        <tr><td>Site Visit — Half Day</td><td>$1,500</td><td>half day</td><td>1–4 hour visit</td></tr>
+        <tr><td>Site Visit — Full Day</td><td>$2,500</td><td>full day</td><td>4–8 hour visit</td></tr>
+        <tr class="section-header"><td colspan="4">Targeted AI Blocks</td></tr>
+        <tr><td>AI Agency Crash Course</td><td>$2,300</td><td></td><td>4 hrs facilitation + 4 hrs prep</td></tr>
+        <tr><td>Ideation — w/LP only</td><td>$2,500</td><td></td><td>6 hrs facilitation + 2 hrs prep</td></tr>
+        <tr><td>Ideation — w/LP &amp; LE</td><td>$4,000</td><td></td><td>6 hrs LP + 6 hrs LE + 2 hrs prep</td></tr>
+        <tr><td>Tool Build — Initial</td><td>$5,000</td><td></td><td>10 hrs LP + 10 hrs LE</td></tr>
+        <tr><td>Tool Build — Additional</td><td>$2,500</td><td></td><td>2 hrs LP + 10 hrs LE</td></tr>
+        <tr><td>Tool Pilot</td><td>$6,500</td><td></td><td>16 hrs LP + 8 hrs LE</td></tr>
+        <tr><td>Tool Revision — Light</td><td>$1,500</td><td>monthly</td><td>6 hrs LE/month</td></tr>
+        <tr><td>Tool Revision — Medium</td><td>$2,800</td><td>monthly</td><td>12 hrs LE/month</td></tr>
+        <tr><td>Tool Revision — Full</td><td>$5,000</td><td>monthly</td><td>22 hrs LE/month</td></tr>
+        <tr class="section-header"><td colspan="4">Other</td></tr>
+        <tr><td>AI Usage Costs</td><td>$300</td><td>monthly</td><td>For non-school partners</td></tr>
+        <tr><td>Knowledge Graph</td><td>$1,500</td><td>per curricula</td><td></td></tr>
       </tbody>
     </table>
   </div>
@@ -549,7 +548,7 @@
         <span class="disc-label">Discount</span>
         <div class="disc-inputs">
           <input class="disc-name" id="discountName" type="text" placeholder="e.g. Pilot Phase Incentive">
-          <input class="disc-num" id="discountVal" type="number" min="0" placeholder="0">
+          <input class="disc-num" id="discountVal" type="number" min="0" step="any" placeholder="0">
           <select class="disc-type" id="discountType">
             <option value="pct">%</option>
             <option value="flat" id="discFlatLabel">$</option>
@@ -941,23 +940,22 @@ const PACKAGES = [
 
 // ─── Add-On Definitions ────────────────────────────────────────────────────────
 const ADDONS = [
-  { blockId: 'coaching', label: 'Coaching', unit: 'hr', defaultQty: 1, minQty: 0.5, step: 0.5, desc: '$450/hr' },
-  { blockId: 'office-hours', label: 'Office Hours', unit: 'hr', defaultQty: 1, minQty: 0.5, step: 0.5, desc: '$300/hr' },
-  { blockId: 'admin-meetings', label: 'Admin Meetings', unit: 'hr', defaultQty: 1, minQty: 0.5, step: 0.5, desc: '$450/hr' },
-  { blockId: 'facilitation', label: 'Extra Facilitation', unit: 'hr', defaultQty: 1.5, minQty: 1.5, step: 0.5, desc: '$600/hr' },
-  { blockId: 'travel-flight', label: 'Travel \u2014 Flight', unit: 'trip', defaultQty: 1, minQty: 1, step: 1, desc: '$2,000/trip' },
-  { blockId: 'travel-local', label: 'Travel \u2014 Local', unit: 'day', defaultQty: 1, minQty: 1, step: 1, desc: '$250/day' },
-  { blockId: 'travel-addl-day', label: 'Travel \u2014 Addl Day', unit: 'day', defaultQty: 1, minQty: 1, step: 1, desc: '$600/day' },
-  { blockId: 'site-visit-half', label: 'Site Visit \u2014 Half Day', unit: 'visit', defaultQty: 1, minQty: 1, step: 1, desc: '$1,500/visit' },
-  { blockId: 'site-visit-full', label: 'Site Visit \u2014 Full Day', unit: 'visit', defaultQty: 1, minQty: 1, step: 1, desc: '$2,500/visit' },
-  { blockId: 'app-support-light', label: 'App Support \u2014 Light', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$1,000/mo' },
-  { blockId: 'app-support-medium', label: 'App Support \u2014 Medium', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$2,000/mo' },
-  { blockId: 'app-support-full', label: 'App Support \u2014 Full', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$4,000/mo' },
-  { blockId: 'ai-crash-course', label: 'AI Agency Crash Course', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$2,300' },
+  { blockId: 'office-hours', label: 'Office Hours', unit: 'hr', defaultQty: 1, minQty: 0.5, step: 0.5, desc: '$300/hr \u00B7 starting at 30 min' },
+  { blockId: 'admin-meetings', label: 'Admin Meetings', unit: 'hr', defaultQty: 1, minQty: 0.5, step: 0.5, desc: '$450/hr \u00B7 starting at 30 min' },
+  { blockId: 'facilitation', label: 'Extra Facilitation', unit: 'hr', defaultQty: 1.5, minQty: 1.5, step: 0.5, desc: '$600/hr \u00B7 up to 50 participants' },
+  { blockId: 'travel-flight', label: 'Travel \u2014 Flight', unit: 'trip', defaultQty: 1, minQty: 1, step: 1, desc: '$2,000/trip \u00B7 8 hrs travel + flight + ground' },
+  { blockId: 'travel-local', label: 'Travel \u2014 Local', unit: 'day', defaultQty: 1, minQty: 1, step: 1, desc: '$250/day \u00B7 mileage + per diem' },
+  { blockId: 'travel-addl-day', label: 'Travel \u2014 Addl Day', unit: 'day', defaultQty: 1, minQty: 1, step: 1, desc: '$600/day \u00B7 hotel + ground + per diem' },
+  { blockId: 'site-visit-half', label: 'Site Visit \u2014 Half Day', unit: 'visit', defaultQty: 1, minQty: 1, step: 1, desc: '$1,500 \u00B7 1\u20134 hour visit' },
+  { blockId: 'site-visit-full', label: 'Site Visit \u2014 Full Day', unit: 'visit', defaultQty: 1, minQty: 1, step: 1, desc: '$2,500 \u00B7 4\u20138 hour visit' },
+  { blockId: 'app-support-light', label: 'App Support \u2014 Light', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$1,000/mo \u00B7 5 hrs support' },
+  { blockId: 'app-support-medium', label: 'App Support \u2014 Medium', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$2,000/mo \u00B7 10 hrs support' },
+  { blockId: 'app-support-full', label: 'App Support \u2014 Full', unit: 'mo', defaultQty: 1, minQty: 1, step: 1, desc: '$4,000/mo \u00B7 20 hrs support' },
+  { blockId: 'ai-crash-course', label: 'AI Agency Crash Course', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$2,300 \u00B7 4 hrs facilitation + 4 hrs prep' },
   { blockId: 'knowledge-graph', label: 'Knowledge Graph', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$1,500/curricula' },
-  { blockId: 'tool-revision-light', label: 'Tool Revision \u2014 Light', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$1,500' },
-  { blockId: 'tool-revision-medium', label: 'Tool Revision \u2014 Medium', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$2,800' },
-  { blockId: 'tool-revision-full', label: 'Tool Revision \u2014 Full', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$5,000' }
+  { blockId: 'tool-revision-light', label: 'Tool Revision \u2014 Light', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$1,500/mo \u00B7 6 hrs LE' },
+  { blockId: 'tool-revision-medium', label: 'Tool Revision \u2014 Medium', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$2,800/mo \u00B7 12 hrs LE' },
+  { blockId: 'tool-revision-full', label: 'Tool Revision \u2014 Full', unit: 'flat', defaultQty: 1, minQty: 1, step: 1, desc: '$5,000/mo \u00B7 22 hrs LE' }
 ];
 
 // ─── Session Helpers ──────────────────────────────────────────────────────────
@@ -1171,8 +1169,8 @@ function buildInlineConfig(pkg) {
       ${sessions.map((s, i) => `<div class="session-config-row">
         <span class="session-config-label">Session ${i + 1}:</span>
         <input class="session-hours-input" type="number" min="0.5" step="0.5" value="${s.hours}"
-               onchange="updateConfigSessionHours('${pkg.id}', ${i}, this)"
-               oninput="updateConfigSessionHours('${pkg.id}', ${i}, this)">
+               onchange="updateConfigSessionHours('${pkg.id}', ${i}, this, true)"
+               oninput="updateConfigSessionHours('${pkg.id}', ${i}, this, false)">
         <span class="session-hours-unit">hrs</span>
         <select class="config-select" style="font-size:10px;padding:4px 6px;min-width:0" onchange="updateConfigSessionDelivery('${pkg.id}',${i},this.value)">
           <option value="virtual" ${s.delivery === 'virtual' ? 'selected' : ''}>Virtual</option>
@@ -1326,18 +1324,23 @@ function updateConfigNumSessions(pkgId, input) {
   }
 }
 
-function updateConfigSessionHours(pkgId, idx, input) {
+function updateConfigSessionHours(pkgId, idx, input, commit) {
   const cs = ensureConfigState(pkgId);
   let val = parseFloat(input.value);
-  if (isNaN(val) || val < 0.5) val = 0.5;
-  val = Math.round(val * 2) / 2;
-  cs.sessions[idx].hours = val;
-  const hadFocus = document.activeElement === input;
-  rerenderConfigOnly(pkgId);
-  if (hadFocus) {
-    const card = document.getElementById('pkgcard-' + pkgId);
-    const inputs = card?.querySelectorAll('.session-hours-input');
-    if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+  if (commit) {
+    if (isNaN(val) || val < 0.5) val = 0.5;
+    val = Math.round(val * 2) / 2;
+    input.value = val;
+    cs.sessions[idx].hours = val;
+    const hadFocus = document.activeElement === input;
+    rerenderConfigOnly(pkgId);
+    if (hadFocus) {
+      const card = document.getElementById('pkgcard-' + pkgId);
+      const inputs = card?.querySelectorAll('.session-hours-input');
+      if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+    }
+  } else {
+    if (!isNaN(val) && val >= 0.5) cs.sessions[idx].hours = Math.round(val * 2) / 2;
   }
 }
 
@@ -1426,37 +1429,54 @@ function togglePkg(pkgId) {
   renderQuote();
 }
 
-function setParticipants(pkgId, input) {
+function setParticipants(pkgId, input, commit) {
   const qpkg = quotePackages.find(q => q.pkgId === pkgId);
   if (!qpkg) return;
   let val = parseInt(input.value);
-  if (isNaN(val) || val < 1) val = 1;
-  qpkg.participants = val;
-  qpkg.facilitators = Math.max(1, Math.ceil(val / 30));
-  const hadFocus = document.activeElement === input;
-  renderQuote();
-  renderTotals();
-  if (hadFocus) {
-    const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
-    const newInput = card?.querySelector('.participants-input');
-    if (newInput) { newInput.focus(); newInput.select(); }
+  if (commit) {
+    if (isNaN(val) || val < 1) val = 1;
+    input.value = val;
   }
+  if (!isNaN(val) && val >= 1) {
+    qpkg.participants = val;
+    qpkg.facilitators = Math.max(1, Math.ceil(val / 30));
+  }
+  renderTotals();
+  if (commit) {
+    const hadFocus = document.activeElement === input;
+    renderQuote();
+    if (hadFocus) {
+      const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
+      const newInput = card?.querySelector('.participants-input');
+      if (newInput) { newInput.focus(); newInput.select(); }
+    }
+  }
+  saveToUrl();
 }
 
-function updateQuoteSessionHours(pkgId, idx, input) {
+function updateQuoteSessionHours(pkgId, idx, input, commit) {
   const qpkg = quotePackages.find(q => q.pkgId === pkgId);
   if (!qpkg || !qpkg.sessions[idx]) return;
   let val = parseFloat(input.value);
-  if (isNaN(val) || val < 0.5) val = 0.5;
-  qpkg.sessions[idx].hours = Math.round(val * 2) / 2;
-  const hadFocus = document.activeElement === input;
-  renderQuote();
-  renderTotals();
-  if (hadFocus) {
-    const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
-    const inputs = card?.querySelectorAll('.builder-session-hours');
-    if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+  if (commit) {
+    if (isNaN(val) || val < 0.5) val = 0.5;
+    val = Math.round(val * 2) / 2;
+    input.value = val;
   }
+  if (!isNaN(val) && val >= 0.5) {
+    qpkg.sessions[idx].hours = Math.round(val * 2) / 2;
+  }
+  renderTotals();
+  if (commit) {
+    const hadFocus = document.activeElement === input;
+    renderQuote();
+    if (hadFocus) {
+      const card = document.querySelector(`.qpkg[data-pkg-id="${pkgId}"]`);
+      const inputs = card?.querySelectorAll('.builder-session-hours');
+      if (inputs && inputs[idx]) { inputs[idx].focus(); inputs[idx].select(); }
+    }
+  }
+  saveToUrl();
 }
 
 function updateQuoteSessionDelivery(pkgId, idx, mode) {
@@ -1492,8 +1512,8 @@ function setCompQty(pkgId, compId, input) {
   let val = parseFloat(input.value);
   if (isNaN(val) || val < 0.5) val = 0.5;
   comp.qty = Math.round(val * 2) / 2;
-  renderQuote();
   renderTotals();
+  saveToUrl();
 }
 
 function changeAutoQty(pkgId, field, dir) {
@@ -1747,8 +1767,8 @@ function buildQuotePkg(qpkg) {
       bodyHtml += `<div class="builder-session-row">
         <span class="builder-session-label">Session ${i + 1}:</span>
         ${hasFacilitation ? `<input class="builder-session-hours" type="number" min="0.5" step="0.5" value="${s.hours}"
-               onchange="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this)"
-               oninput="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this)">
+               onchange="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this, true)"
+               oninput="updateQuoteSessionHours(${qpkg.pkgId}, ${i}, this, false)">
         <span class="session-hours-unit">hrs</span>` : ''}
         <div class="delivery-pills-sm">
           <button class="delivery-pill-sm ${s.delivery === 'virtual' ? 'active' : ''}" onclick="updateQuoteSessionDelivery(${qpkg.pkgId},${i},'virtual')">Virtual</button>
@@ -1764,7 +1784,7 @@ function buildQuotePkg(qpkg) {
     bodyHtml += `<div class="participants-row">
       <label>Participants:</label>
       <input class="participants-input" type="number" min="1" value="${qpkg.participants}"
-             onchange="setParticipants(${qpkg.pkgId}, this)" oninput="setParticipants(${qpkg.pkgId}, this)">
+             onchange="setParticipants(${qpkg.pkgId}, this, true)" oninput="setParticipants(${qpkg.pkgId}, this, false)">
       <span>\u2192</span>
       <span class="facilitator-count">${qpkg.facilitators} facilitator${qpkg.facilitators > 1 ? 's' : ''}</span>
       <span style="font-size:9px;color:#92400e">(1 per 30)</span>
