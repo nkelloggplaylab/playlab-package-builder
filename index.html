@@ -56,6 +56,10 @@
     .currency-toggle label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
     .currency-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
     .currency-select:focus { outline: none; border-color: var(--sky-500); }
+    .lang-toggle { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .lang-toggle label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
+    .lang-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
+    .lang-select:focus { outline: none; border-color: var(--sky-500); }
 
     /* Layout */
     .builder { display: grid; grid-template-columns: 1fr 540px; min-height: calc(100vh - 53px); }
@@ -358,18 +362,27 @@
 
 <div class="auth-gate hidden" id="authGate">
   <div class="auth-logo"><span>P</span><span>l</span><span>a</span><span>y</span><span>l</span><span>a</span><span>b</span></div>
-  <div class="auth-subtitle">Package Builder</div>
+  <div class="auth-subtitle" data-i18n="packageBuilder">Package Builder</div>
   <div id="g_id_signin"></div>
-  <div class="auth-error" id="authError">Access is restricted to @playlab.ai accounts. Please sign in with your Playlab Google account.</div>
+  <div class="auth-error" id="authError" data-i18n="authError">Access is restricted to @playlab.ai accounts. Please sign in with your Playlab Google account.</div>
 </div>
 
 <header class="app-header">
   <div class="logo"><span>P</span><span>l</span><span>a</span><span>y</span><span>l</span><span>a</span><span>b</span></div>
   <div class="header-sep"></div>
-  <div class="header-title">Package Builder v3</div>
+  <div class="header-title" data-i18n="packageBuilderV3">Package Builder v3</div>
   <div class="header-spacer"></div>
+  <div class="lang-toggle">
+    <label>&#x1F310;</label>
+    <select class="lang-select" id="langSelect">
+      <option value="en">English</option>
+      <option value="es">Espa&ntilde;ol</option>
+      <option value="fr">Fran&ccedil;ais</option>
+      <option value="eu">Euskara</option>
+    </select>
+  </div>
   <div class="currency-toggle">
-    <label>Currency</label>
+    <label id="currencyLabel">Currency</label>
     <select class="currency-select" id="currencySelect">
       <option value="USD">USD ($)</option>
       <option value="EUR">EUR (&euro;)</option>
@@ -385,16 +398,16 @@
 </header>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchMainTab('builder')">Builder</button>
-  <button class="tab-btn" onclick="switchMainTab('pricing')">Pricing Sheet</button>
+  <button class="tab-btn active" onclick="switchMainTab('builder')" data-i18n="tabBuilder">Builder</button>
+  <button class="tab-btn" onclick="switchMainTab('pricing')" data-i18n="tabPricingSheet">Pricing Sheet</button>
 </div>
 
 <div class="pricing-view" id="pricingView" style="display:none">
   <div style="max-width:1000px;margin:0 auto;padding:24px 28px 48px">
-    <h2 style="font-size:18px;font-weight:700;color:var(--slate-800);margin-bottom:20px">Software Pricing</h2>
+    <h2 style="font-size:18px;font-weight:700;color:var(--slate-800);margin-bottom:20px" data-i18n="softwarePricing">Software Pricing</h2>
 
     <div style="margin-bottom:12px">
-      <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--slate-600);margin-bottom:8px">Software Tiers</h3>
+      <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--slate-600);margin-bottom:8px" data-i18n="softwareTiers">Software Tiers</h3>
       <table class="pricing-table">
         <thead><tr><th>Free</th><th>Pro</th><th>Play</th><th>Impact</th></tr></thead>
         <tbody><tr>
@@ -407,7 +420,7 @@
     </div>
 
     <div style="margin-bottom:32px">
-      <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--slate-600);margin-bottom:8px">Enrollment-Based Pricing (Schools)</h3>
+      <h3 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--slate-600);margin-bottom:8px" data-i18n="enrollmentPricing">Enrollment-Based Pricing (Schools)</h3>
       <table class="pricing-table">
         <thead><tr><th>Tier</th><th>Student Enrollment</th><th>Price/Student/Year</th><th>Monthly Credits</th></tr></thead>
         <tbody>
@@ -419,7 +432,7 @@
       </table>
     </div>
 
-    <h2 style="font-size:18px;font-weight:700;color:var(--slate-800);margin-bottom:20px">Building Blocks</h2>
+    <h2 style="font-size:18px;font-weight:700;color:var(--slate-800);margin-bottom:20px" data-i18n="buildingBlocks">Building Blocks</h2>
     <table class="pricing-table">
       <thead><tr><th>Building Block</th><th>Cost</th><th>Unit</th><th>Notes</th></tr></thead>
       <tbody>
@@ -463,14 +476,14 @@
 <div class="builder">
   <!-- LEFT: Package Options -->
   <div class="catalog-col">
-    <div class="section-title">Package Options</div>
+    <div class="section-title" data-i18n="packageOptions">Package Options</div>
 
     <div class="pathway-section" id="softwareSection">
       <div class="pathway-header" onclick="document.getElementById('softwareSection').classList.toggle('collapsed')">
         <span class="pathway-chevron">&#x25BC;</span>
         <div class="pathway-dot" style="background:#8b5cf6"></div>
-        <h2>Software Licenses</h2>
-        <span class="pathway-desc">Enterprise tiers &mdash; add multiple licenses</span>
+        <h2 data-i18n="softwareLicenses">Software Licenses</h2>
+        <span class="pathway-desc" data-i18n="softwareLicensesDesc">Enterprise tiers &mdash; add multiple licenses</span>
       </div>
       <div class="pathway-body">
         <div class="sw-grid" id="swGrid"></div>
@@ -483,8 +496,8 @@
       <div class="pathway-header" onclick="document.getElementById('addonsSection').classList.toggle('collapsed')">
         <span class="pathway-chevron">&#x25BC;</span>
         <div class="pathway-dot" style="background:var(--slate-500)"></div>
-        <h2>Add-Ons</h2>
-        <span class="pathway-desc">Individual services to supplement packages</span>
+        <h2 data-i18n="addOns">Add-Ons</h2>
+        <span class="pathway-desc" data-i18n="addOnsDesc">Individual services to supplement packages</span>
       </div>
       <div class="pathway-body">
         <div class="addon-grid" id="addonGrid"></div>
@@ -496,61 +509,61 @@
   <div class="quote-col">
   <div class="quote-tabs" id="quoteTabBar"></div>
   <div class="quote-col-inner">
-    <div style="font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:4px">Package Builder</div>
+    <div style="font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:4px" data-i18n="packageBuilder">Package Builder</div>
 
     <div>
-      <div class="q-label">Partner / Organization</div>
-      <input class="partner-input" id="partnerName" type="text" placeholder="e.g. Nampa School District">
+      <div class="q-label" data-i18n="partnerOrg">Partner / Organization</div>
+      <input class="partner-input" id="partnerName" type="text" placeholder="e.g. Nampa School District" data-i18n-placeholder="partnerPlaceholder">
     </div>
 
     <div id="licenseSummaryWrap">
-      <div class="q-label">Software Licenses</div>
+      <div class="q-label" data-i18n="softwareLicenses">Software Licenses</div>
       <div id="licenseList"></div>
     </div>
 
     <div>
-      <div class="q-label">Services</div>
+      <div class="q-label" data-i18n="services">Services</div>
       <div class="quote-packages" id="quotePackages"></div>
     </div>
 
     <div id="quoteAddonsWrap" style="display:none">
-      <div class="q-label">Add-Ons</div>
+      <div class="q-label" data-i18n="addOns">Add-Ons</div>
       <div id="quoteAddonsList"></div>
     </div>
 
     <div>
-      <div class="q-label">Base Rates</div>
+      <div class="q-label" data-i18n="baseRates">Base Rates</div>
       <div class="rate-editor" id="rateEditor">
         <button class="rate-editor-toggle" onclick="document.getElementById('rateEditor').classList.toggle('open')">
-          <span class="rate-editor-label">Base Rates</span>
+          <span class="rate-editor-label" data-i18n="baseRates">Base Rates</span>
           <span class="rate-editor-status" id="rateStatus">LP $250 &middot; Dev $200 &middot; Travel $125</span>
         </button>
         <div class="rate-editor-body">
           <div class="rate-field"><label>LP $/hr</label><input class="rate-input" id="rateLp" type="number" min="1" value="250" onchange="updateRates()" oninput="updateRates()"></div>
           <div class="rate-field"><label>Dev $/hr</label><input class="rate-input" id="rateDev" type="number" min="1" value="200" onchange="updateRates()" oninput="updateRates()"></div>
           <div class="rate-field"><label>Travel $/hr</label><input class="rate-input" id="rateTravel" type="number" min="1" value="125" onchange="updateRates()" oninput="updateRates()"></div>
-          <button class="rate-reset" onclick="resetRates()">Reset to defaults</button>
+          <button class="rate-reset" onclick="resetRates()" data-i18n="resetToDefaults">Reset to defaults</button>
         </div>
       </div>
     </div>
 
     <div class="totals-section">
       <div class="t-row">
-        <span class="t-label">Services Total</span>
+        <span class="t-label" data-i18n="servicesTotal">Services Total</span>
         <span class="t-value" id="servicesTotal">&mdash;</span>
       </div>
       <div class="t-row">
-        <span class="t-label">Software Total</span>
+        <span class="t-label" data-i18n="softwareTotal">Software Total</span>
         <span class="t-value" id="softwareTotal">&mdash;</span>
       </div>
       <div class="t-row" style="border-top:1px solid var(--slate-100);padding-top:8px">
-        <span class="t-label">Standard Total</span>
+        <span class="t-label" data-i18n="standardTotal">Standard Total</span>
         <span class="t-value" id="standardTotal">&mdash;</span>
       </div>
       <div class="discount-row">
-        <span class="disc-label">Discount</span>
+        <span class="disc-label" data-i18n="discount">Discount</span>
         <div class="disc-inputs">
-          <input class="disc-name" id="discountName" type="text" placeholder="e.g. Pilot Phase Incentive">
+          <input class="disc-name" id="discountName" type="text" placeholder="e.g. Pilot Phase Incentive" data-i18n-placeholder="discountPlaceholder">
           <input class="disc-num" id="discountVal" type="number" min="0" step="any" placeholder="0">
           <select class="disc-type" id="discountType">
             <option value="pct">%</option>
@@ -560,7 +573,7 @@
         <span class="disc-amt" id="discountDisplay"></span>
       </div>
       <div class="total-final">
-        <span class="t-label">Custom Partner Price</span>
+        <span class="t-label" data-i18n="customPartnerPrice">Custom Partner Price</span>
         <span class="t-value" id="partnerPrice">&mdash;</span>
       </div>
       <div class="savings-note" id="savingsNote"></div>
@@ -568,13 +581,13 @@
 
     <div class="insights-section" id="insightsSection" style="display:none">
       <div class="insight-row">
-        <span class="insight-label">Students served
+        <span class="insight-label"><span data-i18n="studentsServed">Students served</span>
           <input class="insight-input" id="studentCount" type="number" min="0" placeholder="0">
         </span>
         <span class="insight-value" id="perStudentCost">&mdash;</span>
       </div>
       <div class="insight-row">
-        <span class="insight-label">Educators served
+        <span class="insight-label"><span data-i18n="educatorsServed">Educators served</span>
           <input class="insight-input" id="educatorCount" type="number" min="0" placeholder="0">
         </span>
         <span class="insight-value" id="perEducatorCost">&mdash;</span>
@@ -584,17 +597,17 @@
     <div class="actions">
       <button class="btn-export" id="exportDocBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Export to Google Doc
+        <span data-i18n="exportToGoogleDoc">Export to Google Doc</span>
       </button>
       <div class="copy-row">
-        <button class="btn-copy" id="copyBtn">Copy for Proposal</button>
+        <button class="btn-copy" id="copyBtn" data-i18n="copyForProposal">Copy for Proposal</button>
         <button class="btn-copy-md" id="copyMdBtn" title="Copy as Markdown">MD</button>
       </div>
-      <button class="btn-copy" id="copyLinkBtn" style="background:var(--slate-700)">Copy Shareable Link</button>
-      <button class="btn-clear" id="clearBtn">Clear All</button>
+      <button class="btn-copy" id="copyLinkBtn" style="background:var(--slate-700)" data-i18n="copyShareableLink">Copy Shareable Link</button>
+      <button class="btn-clear" id="clearBtn" data-i18n="clearAll">Clear All</button>
     </div>
 
-    <p class="footnote">* AI model usage costs are covered by Playlab and not passed on to partners.</p>
+    <p class="footnote" data-i18n="footnote">* AI model usage costs are covered by Playlab and not passed on to partners.</p>
   </div>
   </div>
 </div>
@@ -1019,6 +1032,10 @@ function calcQuotePkgGross(qpkg) {
   total += qpkg.launchMeetingQty * getBlockPrice('admin-meetings');
   // Add office hours
   total += qpkg.officeHoursQty * getBlockPrice('office-hours');
+  // Add check-ins (30 min each)
+  total += (qpkg.checkInQty || 0) * 0.5 * getBlockPrice('admin-meetings');
+  // Add reflection meeting (1 hr each)
+  total += (qpkg.reflectionMeetingQty || 0) * getBlockPrice('admin-meetings');
   return total;
 }
 
@@ -1404,8 +1421,10 @@ function confirmAddPackage(pkgId) {
     sessions,
     travelLocalDays: travelCounts.localDays,
     travelFlightTrips: travelCounts.flightTrips,
-    launchMeetingQty: hasFacilitation ? 1 : 0,
+    launchMeetingQty: (hasFacilitation || pkg.pathway === 'impact') ? 1 : 0,
     officeHoursQty: hasFacilitation ? Math.max(0, sessions.length - 1) : 0,
+    checkInQty: hasFacilitation ? Math.max(0, sessions.length - 1) : 0,
+    reflectionMeetingQty: hasFacilitation ? 1 : 0,
     components
   };
   quotePackages.push(qpkg);
@@ -1961,6 +1980,38 @@ function buildQuotePkg(qpkg) {
     </div>`;
   }
 
+  // Auto-included: Check-ins (30 min each)
+  if ((qpkg.checkInQty || 0) > 0 || hasFacilitation) {
+    const ciTotal = (qpkg.checkInQty || 0) * 0.5 * getBlockPrice('admin-meetings');
+    bodyHtml += `<div class="comp-line support">
+      <div class="comp-info"><div class="comp-name">Check-ins<span class="auto-tag">auto</span><span style="font-size:9px;color:var(--slate-400);margin-left:4px">(sessions\u22121 \u00D7 30 min)</span></div></div>
+      <div class="comp-qty">
+        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'checkInQty',-1)">\u2212</button>
+        <input class="comp-qty-input" type="number" value="${qpkg.checkInQty || 0}" min="0" step="1"
+               onchange="setAutoQty(${qpkg.pkgId},'checkInQty',this)">
+        <span class="comp-unit">\u00D7</span>
+        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'checkInQty',1)">+</button>
+      </div>
+      <div class="comp-total">${fmt(ciTotal)}</div>
+    </div>`;
+  }
+
+  // Auto-included: Reflection Meeting (1 hr each)
+  if ((qpkg.reflectionMeetingQty || 0) > 0 || hasFacilitation) {
+    const rmTotal = (qpkg.reflectionMeetingQty || 0) * getBlockPrice('admin-meetings');
+    bodyHtml += `<div class="comp-line support">
+      <div class="comp-info"><div class="comp-name">Reflection Meeting<span class="auto-tag">auto</span></div></div>
+      <div class="comp-qty">
+        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'reflectionMeetingQty',-1)">\u2212</button>
+        <input class="comp-qty-input" type="number" value="${qpkg.reflectionMeetingQty || 0}" min="0" step="1"
+               onchange="setAutoQty(${qpkg.pkgId},'reflectionMeetingQty',this)">
+        <span class="comp-unit">\u00D7</span>
+        <button class="comp-qty-btn" onclick="changeAutoQty(${qpkg.pkgId},'reflectionMeetingQty',1)">+</button>
+      </div>
+      <div class="comp-total">${fmt(rmTotal)}</div>
+    </div>`;
+  }
+
   // Pathway discount
   if (pkg?.pathwayDiscount) {
     const discAmt = gross * pkg.pathwayDiscount;
@@ -2155,6 +2206,8 @@ function getTabState() {
       travelFlightTrips: qp.travelFlightTrips,
       launchMeetingQty: qp.launchMeetingQty,
       officeHoursQty: qp.officeHoursQty,
+      checkInQty: qp.checkInQty || 0,
+      reflectionMeetingQty: qp.reflectionMeetingQty || 0,
       components: qp.components.map(c => ({ id: c.id, qty: c.qty }))
     })),
     addons: quoteAddons.map(a => ({ blockId: a.blockId, qty: a.qty }))
@@ -2249,8 +2302,10 @@ function loadFromUrl() {
           sessions,
           travelLocalDays: sp.travelLocalDays ?? getDefaultTravelCounts(sessions).localDays,
           travelFlightTrips: sp.travelFlightTrips ?? getDefaultTravelCounts(sessions).flightTrips,
-          launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : (hasFac ? 1 : 0),
+          launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : ((hasFac || pkg.pathway === 'impact') ? 1 : 0),
           officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
+          checkInQty: sp.checkInQty !== undefined ? sp.checkInQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
+          reflectionMeetingQty: sp.reflectionMeetingQty !== undefined ? sp.reflectionMeetingQty : (hasFac ? 1 : 0),
           components
         };
         quotePackages.push(qpkg);
@@ -2350,6 +2405,12 @@ function copyForProposal() {
       }
       if (qpkg.officeHoursQty > 0) {
         lines.push(`    \u2022 Office Hours (${qpkg.officeHoursQty} hrs) \u2014 ${fmt(qpkg.officeHoursQty * getBlockPrice('office-hours'))}`);
+      }
+      if ((qpkg.checkInQty || 0) > 0) {
+        lines.push(`    \u2022 Check-ins (${qpkg.checkInQty}\u00D7 30 min) \u2014 ${fmt(qpkg.checkInQty * 0.5 * getBlockPrice('admin-meetings'))}`);
+      }
+      if ((qpkg.reflectionMeetingQty || 0) > 0) {
+        lines.push(`    \u2022 Reflection Meeting (${qpkg.reflectionMeetingQty}\u00D7) \u2014 ${fmt(qpkg.reflectionMeetingQty * getBlockPrice('admin-meetings'))}`);
       }
       if (pkg?.pathwayDiscount) {
         const discAmt = calcQuotePkgGross(qpkg) * pkg.pathwayDiscount;
@@ -2710,8 +2771,10 @@ function loadTabState(state) {
         sessions,
         travelLocalDays: sp.travelLocalDays ?? getDefaultTravelCounts(sessions).localDays,
         travelFlightTrips: sp.travelFlightTrips ?? getDefaultTravelCounts(sessions).flightTrips,
-        launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : (hasFac ? 1 : 0),
+        launchMeetingQty: sp.launchMeetingQty !== undefined ? sp.launchMeetingQty : ((hasFac || pkg.pathway === 'impact') ? 1 : 0),
         officeHoursQty: sp.officeHoursQty !== undefined ? sp.officeHoursQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
+        checkInQty: sp.checkInQty !== undefined ? sp.checkInQty : (hasFac ? Math.max(0, sessions.length - 1) : 0),
+        reflectionMeetingQty: sp.reflectionMeetingQty !== undefined ? sp.reflectionMeetingQty : (hasFac ? 1 : 0),
         components
       };
       quotePackages.push(qpkg);
