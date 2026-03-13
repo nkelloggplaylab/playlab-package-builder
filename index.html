@@ -270,7 +270,10 @@
     /* Software license line in quote */
     .license-line { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--violet-50); border: 1px solid var(--violet-500); border-radius: 8px; }
     .license-line .comp-info { flex: 1; }
-    .license-line .license-name { font-size: 11px; font-weight: 700; color: var(--violet-600); }
+    .license-line .license-name { font-size: 11px; font-weight: 700; color: var(--violet-600); display: flex; align-items: center; gap: 4px; }
+    .license-line .license-name-input { font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 500; color: var(--slate-600); background: white; border: 1px solid var(--violet-300); border-radius: 4px; padding: 1px 5px; width: 120px; outline: none; }
+    .license-line .license-name-input:focus { border-color: var(--sky-500); }
+    .license-line .license-name-input::placeholder { color: var(--slate-400); font-style: italic; }
     .license-line .license-detail { font-size: 9.5px; color: var(--slate-500); }
     .license-line .license-price { font-size: 12px; font-weight: 800; color: var(--violet-600); flex-shrink: 0; }
 
@@ -785,7 +788,7 @@ function addLicense(tierId, count) {
   const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
   if (!tier) return;
   const c = count || tier.defaultCount;
-  quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count: c });
+  quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count: c, customName: '' });
   renderSwCards();
   renderLicenseList();
   renderTotals();
@@ -797,6 +800,13 @@ function removeLicense(licenseId) {
   renderSwCards();
   renderLicenseList();
   renderTotals();
+}
+
+function updateLicenseName(licenseId, name) {
+  const lic = quoteLicenses.find(l => l.licenseId === licenseId);
+  if (!lic) return;
+  lic.customName = name;
+  saveToUrl();
 }
 
 function updateLicenseCount(licenseId, input, clamp) {
@@ -1644,7 +1654,11 @@ function renderLicenseList() {
     div.style.marginBottom = '6px';
     div.innerHTML = `
       <div class="comp-info">
-        <div class="license-name">${tier.name}</div>
+        <div class="license-name">${tier.name}
+          <input class="license-name-input" type="text" value="${(lic.customName || '').replace(/"/g, '&quot;')}" placeholder="e.g. District name"
+                 onchange="updateLicenseName(${lic.licenseId}, this.value)"
+                 oninput="updateLicenseName(${lic.licenseId}, this.value)">
+        </div>
         <div class="license-detail">${detailDisplay}</div>
       </div>
       <div class="comp-qty">
@@ -2026,7 +2040,7 @@ function getTabState() {
     discountName: document.getElementById('discountName').value,
     students: document.getElementById('studentCount').value,
     educators: document.getElementById('educatorCount').value,
-    licenses: quoteLicenses.map(l => ({ tierId: l.tierId, count: l.count })),
+    licenses: quoteLicenses.map(l => ({ tierId: l.tierId, count: l.count, customName: l.customName || undefined })),
     packages: quotePackages.map(qp => ({
       packageId: qp.packageId,
       customName: qp.customName || undefined,
@@ -2076,7 +2090,7 @@ function loadFromUrl() {
       for (const sl of state.licenses) {
         const tier = SOFTWARE_TIERS.find(t => t.id === sl.tierId);
         if (!tier) continue;
-        quoteLicenses.push({ licenseId: nextLicenseId++, tierId: sl.tierId, count: sl.count || tier.defaultCount });
+        quoteLicenses.push({ licenseId: nextLicenseId++, tierId: sl.tierId, count: sl.count || tier.defaultCount, customName: sl.customName || '' });
       }
     }
     // Backward compat: v2 tier/tierCounts
@@ -2085,7 +2099,7 @@ function loadFromUrl() {
       const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
       if (tier) {
         const count = state.tierCounts?.[tierId] || tier.defaultCount;
-        quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count });
+        quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count, customName: '' });
       }
     }
 
@@ -2187,7 +2201,8 @@ function copyForProposal() {
       const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
       if (!tier) continue;
       const cost = calcLicenseCost(lic);
-      lines.push(pad(`  \u2022 Playlab ${tier.name} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/yr`, fmt(cost)));
+      const licLabel = lic.customName ? `Playlab ${tier.name} (${lic.customName})` : `Playlab ${tier.name}`;
+      lines.push(pad(`  \u2022 ${licLabel} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/yr`, fmt(cost)));
     }
     lines.push('');
   }
@@ -2297,7 +2312,8 @@ function copyAsMarkdown() {
       const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
       if (!tier) continue;
       const cost = calcLicenseCost(lic);
-      md += `| Playlab ${tier.name} | ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} | ${fmt(cost)}/yr |\n`;
+      const licLabel = lic.customName ? `Playlab ${tier.name} (${lic.customName})` : `Playlab ${tier.name}`;
+      md += `| ${licLabel} | ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} | ${fmt(cost)}/yr |\n`;
     }
     md += '\n';
   }
@@ -2388,7 +2404,9 @@ async function exportToGoogleDoc() {
     if (quoteLicenses.length > 0) {
       tierDetail = quoteLicenses.map(lic => {
         const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-        return tier ? `Playlab ${tier.name} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/year` : '';
+        if (!tier) return '';
+        const licLabel = lic.customName ? `Playlab ${tier.name} (${lic.customName})` : `Playlab ${tier.name}`;
+        return `${licLabel} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/year`;
       }).filter(Boolean).join('; ');
     }
 
@@ -2544,7 +2562,7 @@ function loadTabState(state) {
     const tier = SOFTWARE_TIERS.find(t => t.id === tierId);
     if (tier) {
       const count = state.tierCounts?.[tierId] || tier.defaultCount;
-      quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count });
+      quoteLicenses.push({ licenseId: nextLicenseId++, tierId, count, customName: '' });
     }
   }
 
