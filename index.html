@@ -6,7 +6,6 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <title>Playlab — Sales Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -317,10 +316,6 @@
 
     /* Actions */
     .actions { display: flex; flex-direction: column; gap: 7px; }
-    .btn-export { width: 100%; padding: 11px; background: #4285f4; color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn-export:hover { background: #3367d6; }
-    .btn-export:disabled { opacity: 0.6; cursor: wait; }
-    .btn-export svg { width: 16px; height: 16px; flex-shrink: 0; }
     .copy-row { display: flex; gap: 6px; }
     .btn-copy { flex: 1; padding: 11px; background: var(--sky-500); color: white; border: none; border-radius: 9px; font-family: 'Lexend', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-copy:hover { background: var(--sky-600); }
@@ -722,10 +717,6 @@
     </div>
 
     <div class="actions">
-      <button class="btn-export" id="exportDocBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        <span>Export to Google Doc</span>
-      </button>
       <div class="copy-row">
         <button class="btn-copy" id="copyBtn">Copy for Proposal</button>
         <button class="btn-copy-md" id="copyMdBtn" title="Copy as Markdown">MD</button>
@@ -1054,7 +1045,6 @@ function fmt(n) {
   const formatted = Math.round(convertAmount(n)).toLocaleString('en-US');
   return cur.prefix ? cur.symbol + formatted : formatted + cur.symbol;
 }
-function fmtUsd(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function unitShort(unit) {
   const map = { hr: 'hr', mo: 'mo', day: 'day', trip: 'trip', visit: 'visit', flat: '\u00D7' };
@@ -2827,151 +2817,7 @@ async function copyAsMarkdown() {
   });
 }
 
-// ─── Export to Google Doc ──────────────────────────────────────────────────────
-const TEMPLATE_DOC_ID = '1iVvFOhOCGCRouTPnGbtJgmmXJ7Gw0wMUx1BRPUp5dBU';
-const PROPOSALS_FOLDER_ID = '1JhBbiJuizy41xAJs2e-8JuqLiKBWVWgx';
-
-let gapiToken = null;
-
-function getGapiToken() {
-  return new Promise((resolve, reject) => {
-    if (gapiToken) { resolve(gapiToken); return; }
-    if (typeof google === 'undefined' || !google.accounts) { reject('Google API not loaded'); return; }
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: '250408974404-nvnm9m62vc2g8gsn0u0k1t8gt0h0caa2',
-      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/documents',
-      callback: (response) => {
-        if (response.error) { reject(response.error); return; }
-        gapiToken = response.access_token;
-        setTimeout(() => { gapiToken = null; }, 3500 * 1000);
-        resolve(gapiToken);
-      }
-    });
-    client.requestAccessToken();
-  });
-}
-
-async function exportToGoogleDoc() {
-  if (!hasQuoteItems()) { showToast('Add services first'); return; }
-  const btn = document.getElementById('exportDocBtn');
-  btn.disabled = true;
-  btn.innerHTML = 'Creating doc...';
-
-  try {
-    const token = await getGapiToken();
-    const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
-    const std = calcStandardTotal();
-    const disc = calcDiscount(std);
-    const partnerTotal = std - disc;
-
-    // Copy template
-    const copyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${TEMPLATE_DOC_ID}/copy`, {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: `${partner} x Playlab \u2014 Partnership Proposal`, parents: [PROPOSALS_FOLDER_ID] })
-    });
-    if (!copyRes.ok) throw new Error('Failed to copy template: ' + (await copyRes.text()));
-    const { id: docId } = await copyRes.json();
-
-    const requests = [];
-
-    // Build software detail text
-    let tierDetail = 'No software license selected';
-    if (quoteLicenses.length > 0) {
-      tierDetail = quoteLicenses.map(lic => {
-        const tier = SOFTWARE_TIERS.find(t => t.id === lic.tierId);
-        if (!tier) return '';
-        const licLabel = lic.customName ? `Playlab ${tier.name} (${lic.customName})` : `Playlab ${tier.name}`;
-        return `${licLabel} \u2014 ${lic.count.toLocaleString()} ${lic.count === 1 ? tier.unitLabel : tier.unitLabelPlural} @ $${tier.pricePerUnit}/${tier.unitLabel}/year`;
-      }).filter(Boolean).join('; ');
-    }
-
-    const firstLicName = quoteLicenses.length > 0 ? SOFTWARE_TIERS.find(t => t.id === quoteLicenses[0].tierId)?.name || 'Impact' : 'Impact';
-
-    const replacements = {
-      '[Organization]': partner,
-      '[One-line description of partnership purpose and shared vision.]': `Building AI literacy and capacity for ${partner} through Playlab\u2019s AI Partnership Pathway.`,
-      '[Tier]': `Playlab ${firstLicName}`,
-      '[explanation of software tier specifics]': tierDetail,
-      '$TotalSoftware*': fmtUsd(calcTotalSoftware()),
-      '$TotalServices*': fmtUsd(calcServicesTotal()),
-      '$TotalCost*': fmtUsd(partnerTotal)
-    };
-
-    replacements['$X*'] = fmtUsd(calcTotalSoftware());
-
-    for (const [old, rep] of Object.entries(replacements)) {
-      requests.push({ replaceAllText: { containsText: { text: old, matchCase: true }, replaceText: rep } });
-    }
-
-    // Service lines
-    const serviceLines = [];
-    for (const qpkg of quotePackages) {
-      const pkg = PACKAGES.find(p => p.id === qpkg.packageId);
-      const gross = calcQuotePkgGross(qpkg);
-      const net = calcQuotePkgNet(qpkg);
-      let desc = qpkg.customName || (pkg ? pkg.name : 'Package');
-      const sessModes = [...new Set((qpkg.sessions || []).map(s => s.delivery))];
-      if (sessModes.length === 1 && sessModes[0] !== 'virtual') desc += ` [${sessModes[0]}]`;
-      else if (sessModes.length > 1) desc += ` [mixed delivery]`;
-      if (qpkg.facilitators > 1) desc += ` (${qpkg.facilitators} facilitators)`;
-      const compDetails = qpkg.components.map(c => {
-        const effQty = c.scalable ? c.qty * qpkg.facilitators : c.qty;
-        return c.label + ' (' + effQty + ' hrs)';
-      }).join(', ');
-      serviceLines.push({ name: desc, detail: compDetails, standard: fmtUsd(gross), custom: fmtUsd(net) });
-    }
-    for (const addon of quoteAddons) {
-      const total = calcAddonTotal(addon);
-      const qtyStr = addon.unit === 'flat' ? '' : ` (${addon.qty} ${addon.unit}${addon.qty !== 1 ? 's' : ''})`;
-      serviceLines.push({ name: addon.label + qtyStr, detail: '', standard: fmtUsd(total), custom: fmtUsd(total) });
-    }
-
-    if (serviceLines.length >= 1) {
-      const s = serviceLines[0];
-      requests.push({ replaceAllText: { containsText: { text: '[Service]', matchCase: true }, replaceText: s.name } });
-      requests.push({ replaceAllText: { containsText: { text: '$Y', matchCase: true }, replaceText: s.standard } });
-      requests.push({ replaceAllText: { containsText: { text: '$Z', matchCase: true }, replaceText: s.custom } });
-    }
-
-    // Handle discount
-    const discName = document.getElementById('discountName').value.trim() || 'Partner Discount';
-    if (disc > 0) {
-      requests.push({ replaceAllText: { containsText: { text: '[Discount]', matchCase: true }, replaceText: discName } });
-      requests.push({ replaceAllText: { containsText: { text: '\u2212$*', matchCase: true }, replaceText: '\u2212' + fmtUsd(disc) } });
-      requests.push({ replaceAllText: { containsText: { text: '$TotalDiscount', matchCase: true }, replaceText: '\u2212' + fmtUsd(disc) } });
-    } else {
-      requests.push({ replaceAllText: { containsText: { text: '[Discount]', matchCase: true }, replaceText: '\u2014' } });
-      requests.push({ replaceAllText: { containsText: { text: '\u2212$*', matchCase: true }, replaceText: '\u2014' } });
-      requests.push({ replaceAllText: { containsText: { text: '$TotalDiscount', matchCase: true }, replaceText: '$0' } });
-    }
-
-    // Execute batch update
-    if (requests.length > 0) {
-      const updateRes = await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requests })
-      });
-      if (!updateRes.ok) {
-        const errText = await updateRes.text();
-        console.warn('Doc update partial failure:', errText);
-      }
-    }
-
-    window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
-    showToast('Proposal created!');
-  } catch (err) {
-    console.error('Export error:', err);
-    showToast('Export failed \u2014 check console');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> <span>Export to Google Doc</span>';
-  }
-}
-
 // ─── Events ───────────────────────────────────────────────────────────────────
-document.getElementById('exportDocBtn').addEventListener('click', exportToGoogleDoc);
 document.getElementById('copyBtn').addEventListener('click', copyForProposal);
 document.getElementById('copyMdBtn').addEventListener('click', copyAsMarkdown);
 document.getElementById('copyLinkBtn').addEventListener('click', () => {
