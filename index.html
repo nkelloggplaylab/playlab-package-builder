@@ -2055,7 +2055,7 @@ function renderLicenseList() {
     div.innerHTML = `
       <div class="comp-info">
         <div class="license-name">${tier.name}
-          <input class="license-name-input" type="text" value="${(lic.customName || '').replace(/"/g, '&quot;')}" placeholder="e.g. District name"
+          <input class="license-name-input" type="text" value="${escHtml(lic.customName || '')}" placeholder="e.g. District name"
                  onchange="updateLicenseName(${lic.licenseId}, this.value)"
                  oninput="updateLicenseName(${lic.licenseId}, this.value)">
         </div>
@@ -2960,8 +2960,8 @@ function renderTabBar() {
   for (const tab of builderTabs) {
     const isActive = tab.id === activeTabId;
     const displayName = tab.name || 'New Quote';
-    html += '<button class="quote-tab' + (isActive ? ' active' : '') + '" onclick="switchQuoteTab(\'' + tab.id + '\')" title="' + displayName.replace(/"/g, '&quot;') + '">';
-    html += '<span class="quote-tab-name">' + displayName.replace(/</g, '&lt;') + '</span>';
+    html += '<button class="quote-tab' + (isActive ? ' active' : '') + '" onclick="switchQuoteTab(\'' + tab.id + '\')" title="' + escHtml(displayName) + '">';
+    html += '<span class="quote-tab-name">' + escHtml(displayName) + '</span>';
     html += '<span class="quote-tab-close" onclick="event.stopPropagation(); deleteTab(\'' + tab.id + '\')">&times;</span>';
     html += '</button>';
   }
