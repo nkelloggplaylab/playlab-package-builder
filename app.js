@@ -7,7 +7,7 @@ window.onerror = (msg, src, line) => {
 
 // ─── Auth Gate ────────────────────────────────────────────────────────────────
 const AUTH_SESSION_KEY = 'playlab_auth_ok';
-const AUTH_HASH = '2ce06a9e7f8c3e6bf85a6067d0b220fb0ad03de983053942a90c43e73ec76f89';
+const AUTH_HASH = '19c64195eb8f22c39b4bad63078823ddd82e6d61847b25f1f5b969be6c891661';
 
 async function checkPassphrase(input) {
   const encoded = new TextEncoder().encode(input.trim().toLowerCase());
