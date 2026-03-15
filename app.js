@@ -1,162 +1,3 @@
-// ─── i18n / Language ──────────────────────────────────────────────────────────
-let selectedLang = localStorage.getItem('playlab_builder_lang') || 'en';
-
-// ─── Auto-Translation System ────────────────────────────────────────────────
-const LANG_LOCALES = { en: 'en-US', es: 'es-ES', fr: 'fr-FR', eu: 'eu-ES' };
-let translationCache = {};
-try { translationCache = JSON.parse(localStorage.getItem('playlab_i18n_cache') || '{}'); } catch { translationCache = {}; }
-
-function saveTranslationCache() {
-  try { localStorage.setItem('playlab_i18n_cache', JSON.stringify(translationCache)); } catch {}
-}
-
-async function apiTranslate(text, targetLang) {
-  const res = await fetch(
-    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
-  );
-  const data = await res.json();
-  let translated = data[0].map(s => s[0]).join('');
-  translated = translated.replace(/playlab/gi, 'Playlab');
-  return translated;
-}
-
-function getCachedTranslation(text, lang) {
-  if (!lang || lang === 'en' || !text.trim()) return text;
-  return translationCache[lang + ':' + text] || null;
-}
-
-function getTextNodes(root) {
-  const nodes = [];
-  const skip = new Set(['SCRIPT', 'STYLE', 'SVG', 'NOSCRIPT', 'IFRAME', 'CODE', 'PRE']);
-  function walk(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent.trim();
-      if (text && text.length > 1 && !/^[\d$\u20AC\u00A3\u20B9\u20B5\s,.%\u00D7\u00B7\u2014\u2212\u2500\-]+$/.test(text)) {
-        nodes.push(node);
-      }
-      return;
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    if (skip.has(node.tagName)) return;
-    for (const child of node.childNodes) walk(child);
-  }
-  walk(root);
-  return nodes;
-}
-
-const _origTexts = new WeakMap();
-const _origPlaceholders = new WeakMap();
-
-let _translateDebounce = null;
-function scheduleTranslation() {
-  if (_translateDebounce) clearTimeout(_translateDebounce);
-  _translateDebounce = setTimeout(() => translateVisibleDOM(), 30);
-}
-
-async function translateVisibleDOM() {
-  if (selectedLang === 'en') { restoreEnglish(); return; }
-
-  const textNodes = getTextNodes(document.body);
-  const uncached = new Set();
-
-  for (const node of textNodes) {
-    if (!_origTexts.has(node)) _origTexts.set(node, node.textContent);
-    const orig = _origTexts.get(node).trim();
-    if (orig && !translationCache[selectedLang + ':' + orig]) uncached.add(orig);
-  }
-
-  document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
-    if (!_origPlaceholders.has(el)) _origPlaceholders.set(el, el.placeholder);
-    const orig = _origPlaceholders.get(el);
-    if (orig && !translationCache[selectedLang + ':' + orig]) uncached.add(orig);
-  });
-
-  document.querySelectorAll('option').forEach(el => {
-    if (!_origTexts.has(el)) _origTexts.set(el, el.textContent);
-    const orig = _origTexts.get(el).trim();
-    if (orig && orig.length > 1 && !translationCache[selectedLang + ':' + orig]) uncached.add(orig);
-  });
-
-  const titleOrig = document.title;
-  if (!translationCache[selectedLang + ':' + titleOrig]) uncached.add(titleOrig);
-
-  const toTranslate = [...uncached];
-  if (toTranslate.length > 0) {
-    const BATCH = 10;
-    for (let i = 0; i < toTranslate.length; i += BATCH) {
-      const batch = toTranslate.slice(i, i + BATCH);
-      await Promise.all(batch.map(async (text) => {
-        try {
-          const translated = await apiTranslate(text, selectedLang);
-          translationCache[selectedLang + ':' + text] = translated;
-        } catch { /* keep English */ }
-      }));
-    }
-    saveTranslationCache();
-  }
-
-  for (const node of textNodes) {
-    const orig = (_origTexts.get(node) || '').trim();
-    const trans = translationCache[selectedLang + ':' + orig];
-    if (trans && trans !== orig) {
-      const raw = _origTexts.get(node) || node.textContent;
-      const leading = raw.match(/^\s*/)[0];
-      const trailing = raw.match(/\s*$/)[0];
-      node.textContent = leading + trans + trailing;
-    }
-  }
-
-  document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
-    const orig = _origPlaceholders.get(el) || el.placeholder;
-    const trans = translationCache[selectedLang + ':' + orig];
-    if (trans) el.placeholder = trans;
-  });
-
-  document.querySelectorAll('option').forEach(el => {
-    const orig = (_origTexts.get(el) || '').trim();
-    const trans = translationCache[selectedLang + ':' + orig];
-    if (trans) el.textContent = trans;
-  });
-
-  const titleTrans = translationCache[selectedLang + ':' + titleOrig];
-  if (titleTrans) document.title = titleTrans;
-}
-
-function restoreEnglish() {
-  const textNodes = getTextNodes(document.body);
-  for (const node of textNodes) {
-    const orig = _origTexts.get(node);
-    if (orig) node.textContent = orig;
-  }
-  document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
-    const orig = _origPlaceholders.get(el);
-    if (orig) el.placeholder = orig;
-  });
-  document.querySelectorAll('option').forEach(el => {
-    const orig = _origTexts.get(el);
-    if (orig) el.textContent = orig;
-  });
-}
-
-async function translateString(text, lang) {
-  if (!lang || lang === 'en' || !text.trim()) return text;
-  const cacheKey = lang + ':' + text;
-  if (translationCache[cacheKey]) return translationCache[cacheKey];
-  try {
-    const translated = await apiTranslate(text, lang);
-    translationCache[cacheKey] = translated;
-    saveTranslationCache();
-    return translated;
-  } catch { return text; }
-}
-
-function switchLanguage(lang) {
-  selectedLang = lang;
-  localStorage.setItem('playlab_builder_lang', lang);
-  translateVisibleDOM();
-}
-
-
 // ─── Auth Gate ────────────────────────────────────────────────────────────────
 const AUTH_SESSION_KEY = 'playlab_auth_ok';
 const AUTH_HASH = '2ce06a9e7f8c3e6bf85a6067d0b220fb0ad03de983053942a90c43e73ec76f89';
@@ -1734,7 +1575,6 @@ function renderAll() {
   renderLicenseList();
   renderQuote();
   renderTotals();
-  if (selectedLang !== 'en') scheduleTranslation();
 }
 
 // ─── URL State ─────────────────────────────────────────────────────────────────
@@ -1893,12 +1733,11 @@ function loadFromUrl() {
 }
 
 // ─── Copy for Proposal ────────────────────────────────────────────────────────
-async function copyForProposal() {
+function copyForProposal() {
   if (!hasQuoteItems()) { showToast('Add services first'); return; }
 
   const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
-  const locale = LANG_LOCALES[selectedLang] || 'en-US';
-  const today = new Date().toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' });
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const std = calcStandardTotal();
   const disc = calcDiscount(std);
   const partnerTotal = std - disc;
@@ -2014,10 +1853,7 @@ async function copyForProposal() {
 
   lines.push('* AI model usage costs are covered by Playlab and not passed on to partners.');
 
-  let output = lines.join('\n');
-  if (selectedLang !== 'en') {
-    output = await translateString(output, selectedLang);
-  }
+  const output = lines.join('\n');
   navigator.clipboard.writeText(output).then(() => {
     const btn = document.getElementById('copyBtn');
     btn.textContent = 'Copied!';
@@ -2027,7 +1863,7 @@ async function copyForProposal() {
 }
 
 // ─── Copy as Markdown ─────────────────────────────────────────────────────────
-async function copyAsMarkdown() {
+function copyAsMarkdown() {
   if (!hasQuoteItems()) { showToast('Add services first'); return; }
 
   const partner = document.getElementById('partnerName').value.trim() || '[Partner]';
@@ -2075,9 +1911,6 @@ async function copyAsMarkdown() {
   md += `**Custom Partner Price:** ${fmt(partnerTotal)}\n\n`;
   md += `*${'* AI model usage costs are covered by Playlab and not passed on to partners.'.replace(/^\* ?/, '')}*\n`;
 
-  if (selectedLang !== 'en') {
-    md = await translateString(md, selectedLang);
-  }
   navigator.clipboard.writeText(md).then(() => {
     const btn = document.getElementById('copyMdBtn');
     btn.textContent = '\u2713';
@@ -2106,9 +1939,6 @@ document.getElementById('partnerName').addEventListener('change', saveToUrl);
 document.getElementById('partnerName').addEventListener('input', renderTabBar);
 document.getElementById('studentCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
 document.getElementById('educatorCount').addEventListener('input', () => { renderInsights(); saveToUrl(); });
-document.getElementById('langSelect').addEventListener('change', function() {
-  switchLanguage(this.value);
-});
 document.getElementById('currencySelect').addEventListener('change', function() {
   selectedCurrency = this.value;
   const cur = getCurrency();
@@ -2276,10 +2106,5 @@ if (urlLoaded) {
   } else {
     renderAll();
   }
-}
-// Apply saved language
-document.getElementById('langSelect').value = selectedLang;
-if (selectedLang !== 'en') {
-  setTimeout(() => translateVisibleDOM(), 100);
 }
 fetchLiveRates();

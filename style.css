@@ -51,10 +51,6 @@
     .currency-toggle label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
     .currency-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
     .currency-select:focus { outline: none; border-color: var(--sky-500); }
-    .lang-toggle { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .lang-toggle label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); }
-    .lang-select { padding: 4px 8px; border: 1.5px solid var(--slate-200); border-radius: 6px; font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600; color: var(--slate-700); background: white; cursor: pointer; }
-    .lang-select:focus { outline: none; border-color: var(--sky-500); }
 
     /* Layout */
     .builder { display: grid; grid-template-columns: 1fr 540px; min-height: calc(100vh - 53px); }
